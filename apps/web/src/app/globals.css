@@ -1,0 +1,157 @@
+@import "tailwindcss";
+
+/* ── ChainMatch design tokens ─────────────────────────────────────────
+   Grounded in production CSS extracted from Hyperliquid, Lighter,
+   Paradex and CoinGlass. Dark terminal, mint accent, rose negative. */
+
+:root {
+  /* surfaces — cool near-black, ~+4% L per step */
+  --bg: #07090c;
+  --surface: #0e1114;
+  --surface-2: #12161a;
+  --surface-3: #171c21;
+  --elevated: #222a30;
+
+  /* lines: alpha-white, never solid */
+  --line: rgb(255 255 255 / 0.07);
+  --line-strong: rgb(255 255 255 / 0.12);
+  --fill: rgb(255 255 255 / 0.04);
+  --row-hover: rgb(255 255 255 / 0.045);
+
+  /* text */
+  --ink: #f2f7f7;
+  --ink-meta: #8b9498;
+  --ink-muted: #6b7478;
+  --ink-faint: rgb(139 148 152 / 0.55);
+
+  /* accent — mint; always dark text ON accent fills */
+  --accent: #5eead4;
+  --accent-strong: #2dd4bf;
+  --accent-ink: #04070a;
+  --accent-wash: rgb(94 234 212 / 0.07);
+  --accent-line: rgb(94 234 212 / 0.28);
+
+  /* directional — rose negative, not fire-engine red */
+  --pos: #34e39b;
+  --pos-strong: #12b981;
+  --pos-fill: rgb(52 227 155 / 0.1);
+  --neg: #ff5470;
+  --neg-strong: #e6294b;
+  --neg-fill: rgb(255 84 112 / 0.1);
+  --warn: #f5b544;
+  --neutral: #6b7478;
+
+  /* radii — terminal tightness */
+  --r-control: 2px;
+  --r-pill: 3px;
+  --r-card: 4px;
+  --r-modal: 6px;
+  --r-panel: 8px;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-elevated: var(--elevated);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-fill: var(--fill);
+  --color-row-hover: var(--row-hover);
+  --color-ink: var(--ink);
+  --color-ink-meta: var(--ink-meta);
+  --color-ink-muted: var(--ink-muted);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-ink: var(--accent-ink);
+  --color-pos: var(--pos);
+  --color-neg: var(--neg);
+  --color-warn: var(--warn);
+  --color-neutral: var(--neutral);
+  --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+  --radius-control: var(--r-control);
+  --radius-pill: var(--r-pill);
+  --radius-card: var(--r-card);
+  --radius-modal: var(--r-modal);
+  --radius-panel: var(--r-panel);
+}
+
+html {
+  background: var(--bg);
+  color: var(--ink);
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.45;
+  /* Inter character variants: disambiguated a/l/1/g + case-sensitive forms */
+  font-feature-settings: "cv02" 1, "cv03" 1, "cv04" 1, "cv05" 1, "cv11" 1, "case" 1;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* numerals: mono, tabular, slashed zero, right-aligned in tables */
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "calt" 0, "zero" 1;
+  letter-spacing: -0.01em;
+}
+
+/* table headers */
+.th-label {
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--ink-meta);
+  font-weight: 500;
+}
+
+/* edge-bleed directional cell fills — tint pools under right-aligned numerals */
+.cell-pos {
+  background-image: linear-gradient(to left, var(--pos-fill) 0%, transparent 24%);
+}
+.cell-neg {
+  background-image: linear-gradient(to left, var(--neg-fill) 0%, transparent 24%);
+}
+
+/* top-spread accent marking — orthogonal to sign coloring */
+.spread-mark {
+  box-shadow: inset 1px 0 0 var(--accent-line);
+  background-color: var(--accent-wash);
+}
+
+/* value-change flash */
+@keyframes flash-pos {
+  0% { background-color: rgb(52 227 155 / 0.18); }
+  100% { background-color: transparent; }
+}
+@keyframes flash-neg {
+  0% { background-color: rgb(255 84 112 / 0.18); }
+  100% { background-color: transparent; }
+}
+.flash-pos { animation: flash-pos 600ms ease-out; }
+.flash-neg { animation: flash-neg 600ms ease-out; }
+
+/* live-status breathing dot */
+@keyframes breathe {
+  0%, 100% { opacity: 0.85; }
+  50% { opacity: 0.35; }
+}
+.breathe { animation: breathe 2.4s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .flash-pos, .flash-neg, .breathe { animation: none; }
+}
+
+/* scroll shadow on pinned column (applied via JS when h-scrolled) */
+.pin-shadow {
+  box-shadow: 4px 0 8px -4px rgb(0 0 0 / 0.5);
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--accent-ink);
+}

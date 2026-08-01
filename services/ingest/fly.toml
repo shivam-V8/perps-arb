@@ -1,0 +1,39 @@
+# Fly.io config for the ingest service.
+# Deploy from the REPO ROOT so the Docker build context includes shared/:
+#   fly deploy --config services/ingest/fly.toml --dockerfile services/ingest/Dockerfile .
+# (or use `just deploy-ingest`)
+#
+# One-time setup:
+#   fly launch --no-deploy   (from repo root; pick app name + region)
+#   fly redis create         (Upstash Redis; note the private URL)
+#   fly secrets set REDIS_URL=<redis-url> ALLOWED_ORIGINS=https://chainmatch.ai
+
+app = "chainmatch-ingest"
+primary_region = "fra"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  # non-secret config; REDIS_URL and ALLOWED_ORIGINS are secrets
+  POLL_INTERVAL_S = "30"
+  STALE_AFTER_S = "180"
+
+[http_service]
+  internal_port = 8100
+  force_https = true
+  # Pollers must run 24/7 — never let Fly stop the machine.
+  auto_stop_machines = "off"
+  auto_start_machines = true
+  min_machines_running = 1
+
+[[http_service.checks]]
+  interval = "30s"
+  timeout = "5s"
+  grace_period = "20s"
+  method = "GET"
+  path = "/healthz"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"
