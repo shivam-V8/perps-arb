@@ -1,157 +1,143 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 
-/* ── ChainMatch design tokens ─────────────────────────────────────────
-   Grounded in production CSS extracted from Hyperliquid, Lighter,
-   Paradex and CoinGlass. Dark terminal, mint accent, rose negative. */
+/* light-only design: `dark:` styles apply only under an explicit .dark class */
+@custom-variant dark (&:is(.dark *));
 
+/* ChainMatch — light editorial. Off-white canvas, ink-black actions,
+   emerald for "match" signals, serif display type, soft depth. */
 :root {
-  /* surfaces — cool near-black, ~+4% L per step */
-  --bg: #07090c;
-  --surface: #0e1114;
-  --surface-2: #12161a;
-  --surface-3: #171c21;
-  --elevated: #222a30;
+  --background: #f7f6f2;
+  --foreground: #0b0d12;
+  --card: #ffffff;
+  --card-foreground: #0b0d12;
+  --popover: #ffffff;
+  --popover-foreground: #0b0d12;
+  --primary: #0b0d12;
+  --primary-foreground: #ffffff;
+  --secondary: #eeece6;
+  --secondary-foreground: #0b0d12;
+  --muted: #f1efe9;
+  --muted-foreground: #646b78;
+  --accent: #f1efe9;
+  --accent-foreground: #0b0d12;
+  --destructive: #e11d48;
+  --border: rgb(15 23 42 / 0.09);
+  --input: rgb(15 23 42 / 0.12);
+  --ring: rgb(16 185 129 / 0.45);
+  --radius: 0.75rem;
 
-  /* lines: alpha-white, never solid */
-  --line: rgb(255 255 255 / 0.07);
-  --line-strong: rgb(255 255 255 / 0.12);
-  --fill: rgb(255 255 255 / 0.04);
-  --row-hover: rgb(255 255 255 / 0.045);
-
-  /* text */
-  --ink: #f2f7f7;
-  --ink-meta: #8b9498;
-  --ink-muted: #6b7478;
-  --ink-faint: rgb(139 148 152 / 0.55);
-
-  /* accent — mint; always dark text ON accent fills */
-  --accent: #5eead4;
-  --accent-strong: #2dd4bf;
-  --accent-ink: #04070a;
-  --accent-wash: rgb(94 234 212 / 0.07);
-  --accent-line: rgb(94 234 212 / 0.28);
-
-  /* directional — rose negative, not fire-engine red */
-  --pos: #34e39b;
-  --pos-strong: #12b981;
-  --pos-fill: rgb(52 227 155 / 0.1);
-  --neg: #ff5470;
-  --neg-strong: #e6294b;
-  --neg-fill: rgb(255 84 112 / 0.1);
-  --warn: #f5b544;
-  --neutral: #6b7478;
-
-  /* radii — terminal tightness */
-  --r-control: 2px;
-  --r-pill: 3px;
-  --r-card: 4px;
-  --r-modal: 6px;
-  --r-panel: 8px;
+  --brand: #059669;
+  --brand-soft: #10b981;
+  --brand-wash: #ecfdf5;
+  --brand-line: rgb(5 150 105 / 0.25);
+  --rose: #e11d48;
+  --amber: #d97706;
+  --sky: #0284c7;
+  --surface-2: #fbfaf7;
 }
 
 @theme inline {
-  --color-bg: var(--bg);
-  --color-surface: var(--surface);
-  --color-surface-2: var(--surface-2);
-  --color-surface-3: var(--surface-3);
-  --color-elevated: var(--elevated);
-  --color-line: var(--line);
-  --color-line-strong: var(--line-strong);
-  --color-fill: var(--fill);
-  --color-row-hover: var(--row-hover);
-  --color-ink: var(--ink);
-  --color-ink-meta: var(--ink-meta);
-  --color-ink-muted: var(--ink-muted);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
-  --color-accent-strong: var(--accent-strong);
-  --color-accent-ink: var(--accent-ink);
-  --color-pos: var(--pos);
-  --color-neg: var(--neg);
-  --color-warn: var(--warn);
-  --color-neutral: var(--neutral);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-brand: var(--brand);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-wash: var(--brand-wash);
+  --color-brand-line: var(--brand-line);
+  --color-rose: var(--rose);
+  --color-amber: var(--amber);
+  --color-sky: var(--sky);
+  --color-surface-2: var(--surface-2);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
   --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
+  --font-display: var(--font-display-face), var(--font-inter), system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
-  --radius-control: var(--r-control);
-  --radius-pill: var(--r-pill);
-  --radius-card: var(--r-card);
-  --radius-modal: var(--r-modal);
-  --radius-panel: var(--r-panel);
+
+  --animate-float: float 7s ease-in-out infinite;
+  --animate-marquee: marquee 40s linear infinite;
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0) rotate(var(--r, 0deg));
+    }
+    50% {
+      transform: translateY(-14px) rotate(var(--r, 0deg));
+    }
+  }
+  @keyframes marquee {
+    to {
+      transform: translateX(-50%);
+    }
+  }
 }
 
-html {
-  background: var(--bg);
-  color: var(--ink);
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "cv11", "ss01";
+  }
+  ::selection {
+    background: rgb(16 185 129 / 0.2);
+  }
 }
 
-body {
-  font-family: var(--font-sans);
-  font-size: 13px;
-  line-height: 1.45;
-  /* Inter character variants: disambiguated a/l/1/g + case-sensitive forms */
-  font-feature-settings: "cv02" 1, "cv03" 1, "cv04" 1, "cv05" 1, "cv11" 1, "case" 1;
-  -webkit-font-smoothing: antialiased;
-}
-
-/* numerals: mono, tabular, slashed zero, right-aligned in tables */
-.num {
-  font-family: var(--font-mono);
+@utility tabular {
   font-variant-numeric: tabular-nums;
-  font-feature-settings: "tnum" 1, "calt" 0, "zero" 1;
-  letter-spacing: -0.01em;
 }
 
-/* table headers */
-.th-label {
-  font-size: 11px;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  color: var(--ink-meta);
-  font-weight: 500;
+/* hero: warm paper, faint dot grid, emerald glow behind the match engine */
+@utility bg-hero-paper {
+  background:
+    radial-gradient(40% 55% at 78% 45%, rgb(16 185 129 / 0.12), transparent 70%),
+    radial-gradient(30% 40% at 10% 0%, rgb(255 255 255 / 0.9), transparent 70%),
+    radial-gradient(rgb(15 23 42 / 0.09) 1px, transparent 1px) 0 0 / 22px 22px,
+    #f7f6f2;
 }
 
-/* edge-bleed directional cell fills — tint pools under right-aligned numerals */
-.cell-pos {
-  background-image: linear-gradient(to left, var(--pos-fill) 0%, transparent 24%);
-}
-.cell-neg {
-  background-image: linear-gradient(to left, var(--neg-fill) 0%, transparent 24%);
+@utility shadow-soft {
+  box-shadow:
+    0 1px 2px rgb(15 23 42 / 0.04),
+    0 8px 24px -8px rgb(15 23 42 / 0.1);
 }
 
-/* top-spread accent marking — orthogonal to sign coloring */
-.spread-mark {
-  box-shadow: inset 1px 0 0 var(--accent-line);
-  background-color: var(--accent-wash);
+@utility shadow-lift {
+  box-shadow:
+    0 1px 2px rgb(15 23 42 / 0.05),
+    0 30px 60px -20px rgb(15 23 42 / 0.22);
 }
 
-/* value-change flash */
-@keyframes flash-pos {
-  0% { background-color: rgb(52 227 155 / 0.18); }
-  100% { background-color: transparent; }
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
-@keyframes flash-neg {
-  0% { background-color: rgb(255 84 112 / 0.18); }
-  100% { background-color: transparent; }
-}
-.flash-pos { animation: flash-pos 600ms ease-out; }
-.flash-neg { animation: flash-neg 600ms ease-out; }
-
-/* live-status breathing dot */
-@keyframes breathe {
-  0%, 100% { opacity: 0.85; }
-  50% { opacity: 0.35; }
-}
-.breathe { animation: breathe 2.4s ease-in-out infinite; }
 
 @media (prefers-reduced-motion: reduce) {
-  .flash-pos, .flash-neg, .breathe { animation: none; }
-}
-
-/* scroll shadow on pinned column (applied via JS when h-scrolled) */
-.pin-shadow {
-  box-shadow: 4px 0 8px -4px rgb(0 0 0 / 0.5);
-}
-
-::selection {
-  background: var(--accent);
-  color: var(--accent-ink);
+  .animate-float,
+  .animate-marquee {
+    animation: none;
+  }
 }

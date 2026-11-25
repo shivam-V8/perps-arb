@@ -1,145 +1,276 @@
+import {
+  ArrowRight,
+  BarChart3,
+  Briefcase,
+  Check,
+  Code2,
+  EyeOff,
+  FileUp,
+  GraduationCap,
+  HeartPulse,
+  Layers,
+  Lock,
+  Megaphone,
+  MessageCircle,
+  Palette,
+  Scale,
+  Search,
+  Settings2,
+  Sparkles,
+  TrendingUp,
+  Wallet,
+} from "lucide-react";
 import Link from "next/link";
-import { TopSpreads } from "@/components/landing/TopSpreads";
-import { WaitlistForm } from "@/components/landing/WaitlistForm";
-import { fetchSpreadsServer } from "@/lib/api";
+import { Logo } from "@/components/brand/logo";
+import { ResumeFlow } from "@/components/landing/resume-flow";
+import { Button } from "@/components/ui/button";
 
-export const dynamic = "force-dynamic";
+export default function Landing() {
+  return (
+    <div className="min-h-dvh overflow-x-hidden bg-background">
+      <Hero />
+      <AnyField />
+      <HowItWorks />
+      <Compare />
+      <Privacy />
+      <FinalCta />
+      <Footer />
+    </div>
+  );
+}
 
-const PILLARS = [
-  {
-    tag: "SCAN",
-    title: "Every venue, one matrix",
-    body: "Funding on Hyperliquid, Binance, Bybit, Lighter, Paradex and Aster — normalized from each venue's native interval to honest annualized rates, refreshed every 60 seconds.",
-  },
-  {
-    tag: "MATCH",
-    title: "Ranked market-neutral spreads",
-    body: "Short the venue paying you the most, long the venue paying the least. We rank every cross-venue pair by net spread with liquidity floors and stale-feed exclusion built in.",
-  },
-  {
-    tag: "EXECUTE",
-    title: "One-click, coming soon",
-    body: "Open the matched delta-neutral position straight on Hyperliquid — both legs sized, fees shown in dollars, funding tracked live. That's what the waitlist is for.",
-  },
+function Hero() {
+  return (
+    <section className="bg-hero-paper relative">
+      <header className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
+        <Logo />
+        <nav className="flex items-center gap-1 text-sm">
+          <a href="#how" className="hidden rounded-full px-3 py-1.5 text-foreground/70 hover:text-foreground md:block">
+            How it works
+          </a>
+          <a href="#privacy" className="hidden rounded-full px-3 py-1.5 text-foreground/70 hover:text-foreground md:block">
+            Privacy
+          </a>
+          <Button asChild size="sm" variant="ghost" className="rounded-full">
+            <Link href="/onboarding">Open app</Link>
+          </Button>
+        </nav>
+      </header>
+
+      <div className="mx-auto grid max-w-6xl items-center gap-14 px-4 pt-10 pb-20 md:pt-16 lg:grid-cols-[1.05fr_1fr] lg:pb-28">
+        <div>
+          <p className="inline-flex items-center gap-2 rounded-full border border-brand-line bg-white px-3 py-1 text-xs font-semibold text-brand">
+            <Sparkles className="size-3.5" /> Any field · live job postings · AI-ranked
+          </p>
+          <h1 className="mt-6 font-display text-[2.9rem] leading-[1] font-bold tracking-[-0.035em] text-balance sm:text-6xl lg:text-[4.3rem]">
+            Upload your résumé. <span className="text-brand">Swipe on jobs that fit.</span>
+          </h1>
+          <p className="mt-6 max-w-lg text-lg text-foreground/65">
+            Paste your LinkedIn link or upload a résumé. We find open roles on the web and on companies&apos; own job boards, and rank
+            them for you. Recruiters get the other side: candidates who fit, ready to invite.
+          </p>
+          <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+            <Button asChild size="lg" className="h-13 rounded-full px-7 text-[0.95rem]">
+              <Link href="/onboarding?role=candidate">
+                <FileUp /> I&apos;m looking for a job
+              </Link>
+            </Button>
+            <Button asChild size="lg" variant="outline" className="h-13 rounded-full border-black/10 bg-white px-7 text-[0.95rem]">
+              <Link href="/onboarding?role=recruiter">
+                <Briefcase /> I&apos;m hiring
+              </Link>
+            </Button>
+          </div>
+          <ul className="mt-7 flex flex-wrap gap-x-5 gap-y-2 text-sm font-medium text-foreground/70">
+            {["LinkedIn link, PDF or Word", "Live postings from company job boards", "Free to try"].map((t) => (
+              <li key={t} className="flex items-center gap-1.5">
+                <Check className="size-4 text-brand" strokeWidth={2.5} /> {t}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <ResumeFlow />
+      </div>
+    </section>
+  );
+}
+
+const FIELD_TILES = [
+  { icon: HeartPulse, label: "Healthcare" },
+  { icon: Code2, label: "Engineering" },
+  { icon: BarChart3, label: "Data" },
+  { icon: TrendingUp, label: "Sales" },
+  { icon: Megaphone, label: "Marketing" },
+  { icon: Palette, label: "Design" },
+  { icon: Wallet, label: "Finance" },
+  { icon: Settings2, label: "Operations" },
+  { icon: GraduationCap, label: "Education" },
+  { icon: Scale, label: "Legal" },
 ];
 
-const PIPELINE = ["FUNDING_FEED", "NORMALIZE", "ANNUALIZE", "SPREAD_RANK", "ALERT"];
-
-export default async function Landing() {
-  const spreads = await fetchSpreadsServer(5);
-  const top = spreads?.spreads?.[0];
-
+function AnyField() {
   return (
-    <main>
-      {/* nav */}
-      <nav className="mx-auto flex max-w-[1100px] items-center justify-between px-4 py-4">
-        <span className="text-[14px] font-semibold tracking-tight">
-          chain<span className="text-[color:var(--accent)]">match</span>
-        </span>
-        <div className="flex items-center gap-4">
-          <Link href="/rates" className="text-[12px] text-[color:var(--ink-meta)] hover:text-[color:var(--ink)]">
-            Live rates
-          </Link>
-          <Link
-            href="/rates"
-            className="rounded-[var(--r-control)] bg-[color:var(--accent)] px-3 py-1.5 text-[12px] font-semibold text-[color:var(--accent-ink)] hover:bg-[color:var(--accent-strong)]"
-          >
-            Open the table
-          </Link>
-        </div>
-      </nav>
-
-      {/* hero */}
-      <section className="mx-auto max-w-[1100px] px-4 pb-10 pt-14">
-        <h1
-          className="max-w-[720px] font-semibold leading-[1.05] tracking-tight"
-          style={{ fontSize: "clamp(2.25rem, 1rem + 4vw, 4.5rem)" }}
-        >
-          The best market-neutral yield in crypto,{" "}
-          <span className="text-[color:var(--accent)]">right now</span>.
-        </h1>
-        <p className="mt-5 max-w-[560px] text-[15px] leading-relaxed text-[color:var(--ink-meta)]">
-          ChainMatch scans funding rates across the major perp venues and matches you to
-          the highest-paying delta-neutral spread —{" "}
-          {top ? (
-            <>
-              like{" "}
-              <span className="num font-medium text-[color:var(--ink)]">
-                {top.asset} at {top.spread_apy.toFixed(1)}% APY
-              </span>{" "}
-              this minute.
-            </>
-          ) : (
-            "updated every 60 seconds."
-          )}{" "}
-          One-click execution on Hyperliquid is coming.
+    <section className="border-y border-black/[0.06] bg-white px-4 py-14">
+      <div className="mx-auto max-w-6xl">
+        <p className="text-center text-sm font-medium text-muted-foreground">
+          Nurses, analysts, teachers, engineers, sales leads: it works for any profession
         </p>
-        <div className="mt-7" id="waitlist">
-          <WaitlistForm />
-        </div>
-      </section>
+        <ul className="mt-7 grid grid-cols-2 gap-2 sm:grid-cols-5">
+          {FIELD_TILES.map((f) => (
+            <li key={f.label} className="flex items-center gap-2.5 rounded-2xl bg-surface-2 px-4 py-3 ring-1 ring-black/[0.04]">
+              <f.icon className="size-4 text-brand" />
+              <span className="text-sm font-medium">{f.label}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  );
+}
 
-      {/* live proof-of-data immediately below hero */}
-      <section className="mx-auto max-w-[1100px] px-4 pb-14">
-        <div className="mb-2 flex items-baseline justify-between">
-          <h2 className="th-label">Top cross-venue funding spreads — live</h2>
+function HowItWorks() {
+  const seeker = [
+    { icon: FileUp, t: "Add your profile", b: "Paste your LinkedIn link, or upload a résumé or LinkedIn PDF. We build a profile you can edit." },
+    { icon: Search, t: "We find live openings", b: "Web search plus companies' own job boards (Greenhouse, Lever, Ashby and more), so closed postings are filtered out." },
+    { icon: Layers, t: "Swipe and apply", b: "Every card says why it fits. Save the good ones, draft a cover note, apply on the company's site." },
+  ];
+  const recruiter = [
+    { icon: Briefcase, t: "Describe the role", b: "Paste a job description or write one sentence. We turn it into clear requirements." },
+    { icon: Sparkles, t: "Swipe ranked candidates", b: "People who opted in to be found, ranked against your must-haves, each with a reason." },
+    { icon: MessageCircle, t: "Invite and talk", b: "Swipe right to invite. When they accept, you get their name, résumé and a chat." },
+  ];
+  return (
+    <section id="how" className="scroll-mt-10 px-4 py-24 md:py-32">
+      <div className="mx-auto max-w-6xl">
+        <h2 className="max-w-xl font-display text-4xl font-bold tracking-tight sm:text-5xl">Two sides, one swipe</h2>
+        <div className="mt-14 grid gap-6 md:grid-cols-2">
+          {[
+            { title: "For job seekers", steps: seeker, dark: false },
+            { title: "For recruiters", steps: recruiter, dark: true },
+          ].map((col) => (
+            <div
+              key={col.title}
+              className={
+                col.dark ? "rounded-[32px] bg-[#0b0d12] p-8 text-white" : "rounded-[32px] border border-black/[0.06] bg-white p-8 shadow-soft"
+              }
+            >
+              <p className={col.dark ? "text-sm font-semibold text-brand-soft" : "text-sm font-semibold text-brand"}>{col.title}</p>
+              <ol className="mt-6 space-y-6">
+                {col.steps.map((s, i) => (
+                  <li key={s.t} className="flex gap-4">
+                    <span className={col.dark ? "grid size-10 shrink-0 place-items-center rounded-xl bg-white/10" : "grid size-10 shrink-0 place-items-center rounded-xl bg-brand-wash"}>
+                      <s.icon className={col.dark ? "size-4.5 text-white" : "size-4.5 text-brand"} />
+                    </span>
+                    <div>
+                      <p className="font-display text-lg font-semibold">
+                        <span className="mr-2 opacity-40">{i + 1}</span>
+                        {s.t}
+                      </p>
+                      <p className={col.dark ? "mt-0.5 text-sm text-white/60" : "mt-0.5 text-sm text-foreground/60"}>{s.b}</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          ))}
         </div>
-        <TopSpreads initialData={spreads ?? undefined} />
-      </section>
+      </div>
+    </section>
+  );
+}
 
-      {/* pillars */}
-      <section className="mx-auto grid max-w-[1100px] gap-3 px-4 pb-14 md:grid-cols-3">
-        {PILLARS.map((p) => (
-          <div
-            key={p.tag}
-            className="rounded-[var(--r-card)] border border-[color:var(--line)] bg-[color:var(--surface)] p-5"
+function Compare() {
+  const rows = [
+    ["Search a dozen job boards by keyword", "One search across careers pages and boards, from your résumé"],
+    ["Guess which postings you're qualified for", "Each job says why it fits, and where it doesn't"],
+    ["Rewrite a cover letter every time", "A draft cover note from your real experience"],
+    ["Recruiters wade through hundreds of applications", "Recruiters see a ranked shortlist and invite in one swipe"],
+  ];
+  return (
+    <section className="bg-white px-4 py-24">
+      <div className="mx-auto max-w-4xl">
+        <h2 className="text-center font-display text-4xl font-bold tracking-tight sm:text-5xl">Less searching. More hearing back.</h2>
+        <div className="mt-12 overflow-hidden rounded-[28px] border border-black/[0.06]">
+          <div className="grid grid-cols-2 bg-surface-2 text-sm font-semibold">
+            <p className="px-5 py-3 text-muted-foreground">The usual way</p>
+            <p className="border-l border-black/[0.06] px-5 py-3 text-brand">With ChainMatch</p>
+          </div>
+          {rows.map(([a, b]) => (
+            <div key={a} className="grid grid-cols-2 border-t border-black/[0.06] text-sm">
+              <p className="px-5 py-4 text-foreground/55 line-through decoration-black/20">{a}</p>
+              <p className="flex gap-2 border-l border-black/[0.06] px-5 py-4 font-medium">
+                <Check className="mt-0.5 size-4 shrink-0 text-brand" strokeWidth={2.5} />
+                {b}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Privacy() {
+  const items = [
+    { icon: EyeOff, t: "Hidden by default", b: "Recruiters can't find you unless you turn it on." },
+    { icon: Lock, t: "Anonymous until you say yes", b: "They see skills and experience, never your name, email or résumé file, until you accept an invite." },
+    { icon: FileUp, t: "Your résumé stays private", b: "Stored privately and only used to build your profile and search for you." },
+  ];
+  return (
+    <section id="privacy" className="scroll-mt-10 px-4 py-24">
+      <div className="mx-auto max-w-6xl">
+        <h2 className="max-w-xl font-display text-4xl font-bold tracking-tight sm:text-5xl">You decide who sees you</h2>
+        <div className="mt-12 grid gap-4 md:grid-cols-3">
+          {items.map((i) => (
+            <div key={i.t} className="rounded-3xl border border-black/[0.06] bg-white p-6 shadow-soft">
+              <i.icon className="size-5 text-brand" />
+              <p className="mt-4 font-display text-lg font-semibold">{i.t}</p>
+              <p className="mt-1 text-sm text-foreground/60">{i.b}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function FinalCta() {
+  return (
+    <section className="px-4 pb-24">
+      <div className="relative mx-auto max-w-6xl overflow-hidden rounded-[40px] bg-[#0b0d12] px-6 py-20 text-center text-white">
+        <div
+          className="pointer-events-none absolute inset-0 opacity-60 [background:radial-gradient(45%_70%_at_50%_0%,rgb(16_185_129/0.35),transparent_70%)]"
+          aria-hidden
+        />
+        <h2 className="relative mx-auto max-w-2xl font-display text-4xl font-bold tracking-tight sm:text-6xl">Your next job is a swipe away</h2>
+        <p className="relative mx-auto mt-4 max-w-md text-lg text-white/60">Upload a résumé and see live matches in about a minute.</p>
+        <div className="relative mt-9 flex flex-col justify-center gap-3 sm:flex-row">
+          <Button asChild size="lg" className="h-12 rounded-full bg-white px-7 text-[#0b0d12] hover:bg-white/90">
+            <Link href="/onboarding?role=candidate">
+              I&apos;m looking for a job <ArrowRight />
+            </Link>
+          </Button>
+          <Button
+            asChild
+            size="lg"
+            variant="outline"
+            className="h-12 rounded-full border-white/20 bg-transparent px-7 text-white hover:bg-white/10 hover:text-white"
           >
-            <div className="num mb-2 text-[11px] text-[color:var(--accent)]">{p.tag}</div>
-            <h3 className="mb-2 text-[14px] font-semibold">{p.title}</h3>
-            <p className="text-[12px] leading-relaxed text-[color:var(--ink-meta)]">{p.body}</p>
-          </div>
-        ))}
-      </section>
-
-      {/* methodology teaser + pipeline diagram */}
-      <section className="mx-auto max-w-[1100px] px-4 pb-14">
-        <div className="rounded-[var(--r-panel)] border border-[color:var(--line)] bg-[color:var(--surface)] p-6">
-          <h2 className="th-label mb-4">How the matcher works</h2>
-          <div className="num flex flex-wrap items-center gap-2 text-[12px] text-[color:var(--ink)]">
-            {PIPELINE.map((step, i) => (
-              <span key={step} className="flex items-center gap-2">
-                <span className="rounded-[var(--r-pill)] border border-[color:var(--line-strong)] bg-[color:var(--surface-2)] px-2 py-1">
-                  {step}
-                </span>
-                {i < PIPELINE.length - 1 && (
-                  <span className="text-[color:var(--ink-muted)]">→</span>
-                )}
-              </span>
-            ))}
-          </div>
-          <p className="mt-4 max-w-[720px] text-[12px] leading-relaxed text-[color:var(--ink-meta)]">
-            Every venue quotes funding on its own interval — Hyperliquid hourly, most CEXs
-            every 8 hours, some assets every 4. We read each venue&apos;s interval from its
-            own metadata and annualize honestly: rate × (24 / interval) × 365. Feeds that
-            go stale for more than 3 minutes are marked degraded and excluded from spread
-            ranking — never shown as live. Binance rates come via Hyperliquid&apos;s
-            predicted-funding feed. Full methodology page coming with the matcher.
-          </p>
+            <Link href="/onboarding?role=recruiter">I&apos;m hiring</Link>
+          </Button>
         </div>
-      </section>
+      </div>
+    </section>
+  );
+}
 
-      {/* footer */}
-      <footer className="border-t border-[color:var(--line)]">
-        <div className="mx-auto flex max-w-[1100px] flex-wrap items-center justify-between gap-3 px-4 py-6 text-[11px] text-[color:var(--ink-muted)]">
-          <span>
-            chain<span className="text-[color:var(--accent)]">match</span> · data +
-            execution tooling, not financial advice
-          </span>
-          <span className="num">
-            hyperliquid · binance · bybit · lighter · paradex · aster
-          </span>
-        </div>
-      </footer>
-    </main>
+function Footer() {
+  return (
+    <footer className="border-t border-black/[0.06]">
+      <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-4 px-4 py-8 text-sm text-muted-foreground sm:flex-row sm:items-center">
+        <Logo />
+        <p>© {new Date().getFullYear()} ChainMatch · Résumé-to-job matching for any field</p>
+      </div>
+    </footer>
   );
 }

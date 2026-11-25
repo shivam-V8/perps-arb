@@ -1,74 +1,128 @@
-// TS mirrors of services/ingest response shapes (api/routes.py). Keep in sync.
+export type Role = "candidate" | "recruiter";
 
-export type VenueId =
-  | "hyperliquid"
-  | "binance"
-  | "bybit"
-  | "lighter"
-  | "paradex"
-  | "aster";
+export type FieldId =
+  | "engineering"
+  | "data"
+  | "design"
+  | "product"
+  | "marketing"
+  | "sales"
+  | "finance"
+  | "healthcare"
+  | "operations"
+  | "education"
+  | "legal"
+  | "other";
 
-export const VENUE_IDS: VenueId[] = [
-  "hyperliquid",
-  "binance",
-  "bybit",
-  "lighter",
-  "paradex",
-  "aster",
-];
+export type Seniority = "entry" | "mid" | "senior" | "lead" | "executive";
+export type RemotePref = "remote" | "hybrid" | "onsite" | "any";
 
-export const VENUE_LABELS: Record<VenueId, string> = {
-  hyperliquid: "Hyperliquid",
-  binance: "Binance",
-  bybit: "Bybit",
-  lighter: "Lighter",
-  paradex: "Paradex",
-  aster: "Aster",
-};
-
-export type VenueStatus = "live" | "degraded" | "down";
-
-export interface VenueHealth {
-  venue: VenueId;
-  status: VenueStatus;
-  last_success_ts: number | null;
-  age_s: number | null;
+export interface Experience {
+  title: string;
+  company: string;
+  start: string;
+  end: string;
+  highlights: string[];
 }
 
-export interface RateEntry {
-  annualized_pct: number;
-  raw_rate: number;
-  interval_hours: number;
-  mark_price: number | null;
-  oi_usd: number | null;
-  next_funding_ts: number | null;
-  fetched_at: number;
+/** A candidate's profile, parsed from a résumé or LinkedIn export and edited by them. */
+export interface CandidateProfile {
+  full_name: string;
+  email: string;
+  headline: string;
+  summary: string;
+  fields: FieldId[];
+  skills: string[];
+  experience: Experience[];
+  education: string[];
+  location: string;
+  remote_pref: RemotePref;
+  seniority: Seniority;
+  salary_min: number | null;
+  salary_currency: string;
+  visible_to_recruiters: boolean;
+  resume_path?: string | null;
+  linkedin_url?: string | null;
+  updated_at?: string;
 }
 
-export interface AssetRates {
-  asset: string;
-  rates: Partial<Record<VenueId, RateEntry>>;
+/** A live posting found on the web for a candidate. */
+export interface JobPosting {
+  id: string;
+  title: string;
+  company: string;
+  location: string;
+  remote: RemotePref | "unknown";
+  url: string;
+  source: string;
+  posted: string;
+  salary: string | null;
+  summary: string;
+  score: number;
+  reasons: string[];
+  saved?: boolean;
+  /** read from (or confirmed in) the company's live ATS feed */
+  verified?: boolean;
+  ats?: string | null;
 }
 
-export interface RatesResponse {
-  updated_at: number;
-  venues: VenueHealth[];
-  assets: AssetRates[];
+export interface CompanyLead {
+  name: string;
+  why: string;
+  url: string;
 }
 
-export interface Spread {
-  asset: string;
-  short_venue: VenueId;
-  long_venue: VenueId;
-  short_apy: number;
-  long_apy: number;
-  spread_apy: number;
-  short_mark: number | null;
-  min_leg_oi_usd: number | null;
-  n_venues: number;
+/** A recruiter's open position. */
+export interface RoleOpening {
+  id: string;
+  recruiter_id: string;
+  title: string;
+  company: string;
+  description: string;
+  fields: FieldId[];
+  must_have: string[];
+  nice_to_have: string[];
+  location: string;
+  remote: RemotePref;
+  seniority: Seniority;
+  salary_min: number | null;
+  salary_max: number | null;
+  created_at: string;
 }
 
-export interface SpreadsResponse {
-  updated_at: number;
-  spreads: Spread[];
+/** What a recruiter sees before a candidate accepts: no name, email or résumé file. */
+export interface CandidateCardData {
+  candidate_id: string;
+  headline: string;
+  summary: string;
+  fields: FieldId[];
+  skills: string[];
+  experience: Pick<Experience, "title" | "company" | "start" | "end">[];
+  seniority: Seniority;
+  location: string;
+  remote_pref: RemotePref;
+  score: number;
+  reasons: string[];
 }
+
+export type MatchStatus = "invited" | "accepted" | "declined";
+
+export interface MatchRow {
+  id: string;
+  role_id: string;
+  candidate_id: string;
+  recruiter_id: string;
+  status: MatchStatus;
+  note: string | null;
+  created_at: string;
+}
+
+export interface Message {
+  id: string;
+  match_id: string;
+  sender_id: string;
+  body: string;
+  created_at: string;
+}
+
+export type Decision = "like" | "pass";
