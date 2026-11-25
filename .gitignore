@@ -25,3 +25,9 @@ __pycache__/
 .vercel
 .fly/
 apps/web/.next-build/
+
+# cloudflare
+apps/web/.open-next/
+apps/web/.wrangler/
+apps/web/.dev.vars
+apps/web/cloudflare-env.d.ts

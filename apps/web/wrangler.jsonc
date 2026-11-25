@@ -1,0 +1,12 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "chainmatch",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-11-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
+  "observability": { "enabled": true },
+  // Postgres (Neon) through Hyperdrive; `id` is filled in after `wrangler hyperdrive create`.
+  // Secrets (set with `wrangler secret put`): ANTHROPIC_API_KEY, FIRECRAWL_API_KEY, SESSION_SECRET, DATABASE_URL.
+  "vars": {}
+}

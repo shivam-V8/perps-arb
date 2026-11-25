@@ -7,6 +7,15 @@ import { getDb, schema as s } from "../src/db";
 import type { Experience } from "../src/lib/types";
 
 if (process.env.NODE_ENV === "production") throw new Error("Refusing to seed demo data in production");
+// Only ever seed a local database: never put fake candidates into a hosted one (e.g. Neon).
+const host = (() => {
+  try {
+    return new URL(process.env.DATABASE_URL ?? "").hostname;
+  } catch {
+    return "";
+  }
+})();
+if (!["localhost", "127.0.0.1", "::1"].includes(host)) throw new Error(`Refusing to seed demo data into non-local database (${host || "unknown host"})`);
 
 const job = (title: string, company: string, start: string, end = "Present"): Experience => ({ title, company, start, end, highlights: [] });
 
