@@ -6,15 +6,9 @@
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
   "observability": { "enabled": true },
-  // Production domains (Workers custom domains; DNS + certificates managed by Cloudflare).
-  // hourly: sends weekly digests to the few Pro users who are due (custom-worker.ts)
-  "triggers": { "crons": ["0 * * * *"] },
+  // Production now runs on AWS (scripts/deploy-aws.sh); this Worker only keeps its workers.dev URL as a fallback.
   "workers_dev": true,
-  // www redirects to the apex in middleware (src/lib/canonical-host.ts)
-  "routes": [
-    { "pattern": "chainmatch.ai", "custom_domain": true },
-    { "pattern": "www.chainmatch.ai", "custom_domain": true }
-  ],
+  "triggers": { "crons": [] },
   // Postgres (Neon) through Hyperdrive (pooled connections close to the database).
   "hyperdrive": [{ "binding": "HYPERDRIVE", "id": "21601a901f794e3f90bcd06ed30b1ca7", "localConnectionString": "postgres://chainmatch:chainmatch@localhost:5433/chainmatch" }],
   // Secrets (set with `wrangler secret put`): ANTHROPIC_API_KEY, FIRECRAWL_API_KEY, SESSION_SECRET, DATABASE_URL.
