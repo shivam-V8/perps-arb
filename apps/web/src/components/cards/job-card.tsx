@@ -1,4 +1,4 @@
-import { BadgeCheck, ExternalLink, Globe, MapPin, Sparkles } from "lucide-react";
+import { BadgeCheck, ExternalLink, Globe, Lock, MapPin, Sparkles } from "lucide-react";
 import { TONE_WASH, toneFor } from "@/components/profile/avatar-mark";
 import { CompanyLogo } from "@/components/profile/company-logo";
 import { companyDomainFor } from "@/lib/company-logo";
@@ -7,8 +7,19 @@ import { remoteLabel } from "@/lib/fields";
 import type { JobPosting } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-/** A live posting found for the candidate. */
-export function JobCard({ job, className }: { job: JobPosting; className?: string }) {
+/** A live posting found for the candidate (or its locked preview). */
+export function JobCard({
+  job,
+  className,
+  onUnlock,
+  credits = 0,
+}: {
+  job: JobPosting;
+  className?: string;
+  onUnlock?: (job: JobPosting) => void;
+  credits?: number;
+}) {
+  if (job.locked) return <LockedJobCard job={job} className={className} onUnlock={onUnlock} credits={credits} />;
   const tone = toneFor(job.company);
   return (
     <article className={cn("flex h-full flex-col overflow-hidden rounded-[28px] border border-black/[0.06] bg-card shadow-lift", className)}>
@@ -67,6 +78,67 @@ export function JobCard({ job, className }: { job: JobPosting; className?: strin
         >
           <ExternalLink className="size-3.5" /> View posting
         </a>
+      </div>
+    </article>
+  );
+}
+
+/** Behind the paywall: title, place and fit are real; the rest is a placeholder. */
+function LockedJobCard({
+  job,
+  className,
+  onUnlock,
+  credits,
+}: {
+  job: JobPosting;
+  className?: string;
+  onUnlock?: (job: JobPosting) => void;
+  credits: number;
+}) {
+  return (
+    <article className={cn("flex h-full flex-col overflow-hidden rounded-[28px] border border-black/[0.06] bg-card shadow-lift", className)}>
+      <header className="bg-gradient-to-b from-[#eceff4] to-white px-6 pt-6 pb-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="grid size-16 place-items-center rounded-2xl bg-white shadow-soft ring-1 ring-black/[0.08]">
+            <Lock className="size-6 text-muted-foreground" />
+          </div>
+          <div className="flex flex-col items-center gap-0.5 rounded-2xl bg-white/80 px-2 pt-2 pb-1 shadow-soft backdrop-blur">
+            <MatchRing score={job.score} size={48} />
+            <span className="text-[0.6rem] font-medium tracking-wider text-muted-foreground uppercase">fit</span>
+          </div>
+        </div>
+        <h3 className="mt-4 line-clamp-2 font-display text-[1.6rem] leading-[1.1] font-semibold tracking-tight">{job.title}</h3>
+        <p className="mt-1.5 h-4 w-32 rounded bg-black/[0.07]" aria-label="Company hidden" />
+        <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
+          <span className="flex items-center gap-1">
+            <MapPin className="size-3" />
+            {job.location || "Location not listed"}
+          </span>
+          {job.remote !== "unknown" && job.remote !== "any" && <span>{remoteLabel(job.remote)}</span>}
+        </p>
+      </header>
+      <div className="relative flex min-h-0 flex-1 flex-col px-6 pb-6">
+        <div className="space-y-2 blur-[3px] select-none" aria-hidden>
+          <div className="h-3 w-full rounded bg-black/[0.07]" />
+          <div className="h-3 w-11/12 rounded bg-black/[0.07]" />
+          <div className="h-3 w-4/5 rounded bg-black/[0.07]" />
+          <div className="mt-4 h-24 rounded-2xl bg-surface-2" />
+        </div>
+        <div className="mt-auto pt-5 text-center">
+          <p className="text-sm font-medium">This {job.score}% match is locked</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">See the company, the link and why it fits you.</p>
+          {onUnlock && (
+            <button
+              type="button"
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={() => onUnlock(job)}
+              className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-foreground px-5 py-2.5 text-sm font-semibold text-background transition-opacity hover:opacity-90"
+            >
+              <Lock className="size-3.5" />
+              {credits > 0 ? `Unlock · ${credits} left` : "Unlock this job"}
+            </button>
+          )}
+        </div>
       </div>
     </article>
   );

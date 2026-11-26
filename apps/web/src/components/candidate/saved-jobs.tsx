@@ -88,7 +88,9 @@ export function SavedJobs({ jobs: initial }: { jobs: JobPosting[] }) {
                 className="ml-auto rounded-full text-muted-foreground"
                 onClick={() => {
                   setJobs((l) => l.filter((x) => x.id !== j.id));
-                  start(() => decideJob(j.id, "pass"));
+                  start(async () => {
+                    await decideJob(j.id, "pass");
+                  });
                 }}
               >
                 <Trash2 /> Remove

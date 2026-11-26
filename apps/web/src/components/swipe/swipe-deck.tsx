@@ -19,6 +19,7 @@ export function SwipeDeck<T extends { id: string }>({
   likeLabel,
   passLabel,
   empty,
+  canDecide,
 }: {
   items: T[];
   render: (item: T) => React.ReactNode;
@@ -26,6 +27,8 @@ export function SwipeDeck<T extends { id: string }>({
   likeLabel: string;
   passLabel: string;
   empty: React.ReactNode;
+  /** return false to refuse a swipe (the card springs back), e.g. saving a locked job */
+  canDecide?: (item: T, d: Decision) => boolean;
 }) {
   const [exitDir, setExitDir] = useState<ExitDir>("none");
   const top = items[0];
@@ -33,11 +36,12 @@ export function SwipeDeck<T extends { id: string }>({
   const act = useCallback(
     (d: Decision) => {
       if (!top) return;
+      if (canDecide && !canDecide(top, d)) return;
       setExitDir(d);
       if (typeof navigator !== "undefined") navigator.vibrate?.(8);
       onDecide(top, d);
     },
-    [top, onDecide],
+    [top, onDecide, canDecide],
   );
 
   useEffect(() => {

@@ -1,10 +1,13 @@
-import { FileUp, RotateCcw } from "lucide-react";
+import { FileUp, LogOut, RotateCcw } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { startOver } from "@/app/actions";
+import { PlanCard } from "@/components/billing/plan-card";
+import { ResumeFixes } from "@/components/billing/resume-fixes";
 import { CandidateForm, EMPTY_CANDIDATE } from "@/components/candidate/candidate-form";
+import { billingEnabled } from "@/lib/billing/stripe";
 import { Button } from "@/components/ui/button";
-import { getOwnCandidate } from "@/server/data";
+import { getEntitlement, getOwnCandidate, stripeCustomerFor } from "@/server/data";
 import { currentViewer } from "@/server/session";
 
 export const metadata = { title: "Profile" };
@@ -13,6 +16,8 @@ export default async function ProfilePage() {
   const viewer = await currentViewer();
   if (!viewer?.role) redirect("/onboarding");
   const candidate = viewer.role === "candidate" ? await getOwnCandidate(viewer.id) : null;
+  const [entitlement, customer] = await Promise.all([getEntitlement(viewer.id), stripeCustomerFor(viewer.id)]);
+  const billingOpen = billingEnabled();
 
   return (
     <div className="mx-auto w-full max-w-3xl pt-6 md:pt-10">
@@ -20,7 +25,7 @@ export default async function ProfilePage() {
         <div>
           <h1 className="font-display text-4xl font-semibold tracking-tight">Profile</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {viewer.role === "candidate" ? "Job seeker" : "Recruiter"} · saved in this browser (no account yet)
+            {viewer.role === "candidate" ? "Job seeker" : "Recruiter"} · {entitlement.email ?? "saved in this browser"}
           </p>
         </div>
         <div className="flex gap-2">
@@ -39,12 +44,25 @@ export default async function ProfilePage() {
             </Button>
           )}
           <form action={startOver}>
-            <Button variant="ghost" size="sm" className="rounded-full text-rose">
-              <RotateCcw /> Start over
-            </Button>
+            {entitlement.email ? (
+              <Button variant="ghost" size="sm" className="rounded-full">
+                <LogOut /> Sign out
+              </Button>
+            ) : (
+              <Button variant="ghost" size="sm" className="rounded-full text-rose">
+                <RotateCcw /> Start over
+              </Button>
+            )}
           </form>
         </div>
       </div>
+
+      {viewer.role === "candidate" && (
+        <div className="mt-8 space-y-4">
+          <PlanCard entitlement={entitlement} billingOpen={billingOpen} hasPurchases={Boolean(customer)} />
+          {candidate && <ResumeFixes entitlement={entitlement} billingOpen={billingOpen} />}
+        </div>
+      )}
 
       {viewer.role === "candidate" && (
         <div className="mt-8 rounded-3xl border border-black/[0.06] bg-white/60 p-5 sm:p-7">

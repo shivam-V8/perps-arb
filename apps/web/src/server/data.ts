@@ -1,11 +1,13 @@
 import { and, asc, desc, eq, inArray, isNull, ne, notExists, or, sql } from "drizzle-orm";
 import { cleanDomain } from "@/lib/company-logo";
 import { getDb, schema as s } from "@/db";
+import type { ResumeFix } from "@/db/schema";
 import type {
   CandidateCardData,
   CandidateProfile,
   CompanyLead,
   Decision,
+  Entitlement,
   Experience,
   FieldId,
   JobPosting,
@@ -80,7 +82,30 @@ function toRole(r: RoleRow): RoleOpening {
   };
 }
 
-function toJob(r: JobRow): JobPosting {
+/** A job the viewer hasn't unlocked: enough to tempt (title, place, fit), nothing to apply with. */
+function lockedJob(r: JobRow): JobPosting {
+  return {
+    id: r.id,
+    title: r.title,
+    company: "",
+    companyDomain: null,
+    location: r.location,
+    remote: r.remote as JobPosting["remote"],
+    url: "",
+    source: "",
+    posted: "",
+    salary: null,
+    summary: "",
+    score: r.score,
+    reasons: [],
+    verified: false,
+    ats: null,
+    locked: true,
+  };
+}
+
+function toJob(r: JobRow, visible = true): JobPosting {
+  if (!visible) return lockedJob(r);
   return {
     id: r.id,
     title: r.title,
@@ -191,12 +216,17 @@ async function hasAcceptedMatch(recruiterId: string, candidateId: string) {
 /* ── live job results (candidate) ──────────────────────────────────── */
 
 export async function listJobs(uid: string, which: "unreviewed" | "saved"): Promise<JobPosting[]> {
-  const rows = await db()
-    .select()
-    .from(s.jobResults)
-    .where(and(eq(s.jobResults.candidateId, uid), which === "saved" ? eq(s.jobResults.decision, "like") : isNull(s.jobResults.decision)))
-    .orderBy(desc(s.jobResults.score));
-  return rows.map(toJob);
+  const [rows, pro] = await Promise.all([
+    db()
+      .select()
+      .from(s.jobResults)
+      .where(and(eq(s.jobResults.candidateId, uid), which === "saved" ? eq(s.jobResults.decision, "like") : isNull(s.jobResults.decision)))
+      .orderBy(desc(s.jobResults.score)),
+    hasFullAccess(uid),
+  ]);
+  // unlocked first (best fit first within each group), so the free picks lead the deck
+  const out = rows.map((r) => toJob(r, pro || r.unlockedAt !== null));
+  return [...out.filter((j) => !j.locked), ...out.filter((j) => j.locked)];
 }
 
 export async function countJobs(uid: string) {
@@ -204,21 +234,41 @@ export async function countJobs(uid: string) {
   return r?.n ?? 0;
 }
 
+/** One of the viewer's jobs, redacted unless they can see it (Pro or unlocked). */
 export async function getOwnJob(uid: string, jobId: string) {
   if (!isId(jobId)) return null;
   const [r] = await db().select().from(s.jobResults).where(and(eq(s.jobResults.id, jobId), eq(s.jobResults.candidateId, uid))).limit(1);
-  return r ? toJob(r) : null;
+  if (!r) return null;
+  return toJob(r, r.unlockedAt !== null || (await hasFullAccess(uid)));
 }
 
 /** Replaces unreviewed results with a fresh search; keeps anything saved or passed. */
 export async function replaceJobResults(uid: string, jobs: Omit<JobPosting, "id">[], companies: CompanyLead[]) {
   await db().transaction(async (tx) => {
-    await tx.delete(s.jobResults).where(and(eq(s.jobResults.candidateId, uid), isNull(s.jobResults.decision)));
+    // unreviewed results are replaced, but never ones the user unlocked (or got free)
+    await tx.delete(s.jobResults).where(and(eq(s.jobResults.candidateId, uid), isNull(s.jobResults.decision), isNull(s.jobResults.unlockedAt)));
     if (jobs.length) {
-      await tx
+      const inserted = await tx
         .insert(s.jobResults)
-        .values(jobs.map((j) => ({ ...j, companyDomain: j.companyDomain ?? null, verified: j.verified ?? false, ats: j.ats ?? null, candidateId: uid })))
-        .onConflictDoNothing();
+        .values(
+          jobs.map(({ locked: _locked, saved: _saved, ...j }) => ({
+            ...j,
+            companyDomain: j.companyDomain ?? null,
+            verified: j.verified ?? false,
+            ats: j.ats ?? null,
+            unlockedAt: null,
+            unlockVia: null,
+            candidateId: uid,
+          })),
+        )
+        .onConflictDoNothing()
+        .returning({ id: s.jobResults.id, score: s.jobResults.score });
+      // the best few new results of every search are free to see
+      const free = inserted
+        .sort((a, b) => b.score - a.score)
+        .slice(0, FREE_PICKS_PER_SEARCH)
+        .map((r) => r.id);
+      if (free.length) await tx.update(s.jobResults).set({ unlockedAt: sql`now()`, unlockVia: "free" }).where(inArray(s.jobResults.id, free));
     }
     await tx.delete(s.companyLeads).where(eq(s.companyLeads.candidateId, uid));
     if (companies.length) {
@@ -234,9 +284,15 @@ export async function listCompanies(uid: string): Promise<CompanyLead[]> {
   return db().select({ name: s.companyLeads.name, domain: s.companyLeads.domain, why: s.companyLeads.why, url: s.companyLeads.url }).from(s.companyLeads).where(eq(s.companyLeads.candidateId, uid));
 }
 
-export async function decideJob(uid: string, jobId: string, decision: Decision | null) {
-  if (!isId(jobId)) return;
+/** Saving needs the job unlocked (or Pro); passing is always allowed. Returns false if refused. */
+export async function decideJob(uid: string, jobId: string, decision: Decision | null): Promise<boolean> {
+  if (!isId(jobId)) return false;
+  if (decision === "like") {
+    const job = await getOwnJob(uid, jobId);
+    if (!job || job.locked) return false;
+  }
   await db().update(s.jobResults).set({ decision }).where(and(eq(s.jobResults.id, jobId), eq(s.jobResults.candidateId, uid)));
+  return true;
 }
 
 /* ── recruiter roles ───────────────────────────────────────────────── */
@@ -504,6 +560,8 @@ const envInt = (name: string, fallback: number) => {
 export const QUOTAS = {
   linkedin: { limit: envInt("QUOTA_LINKEDIN_PER_HOUR", 10), windowMins: 60 },
   jobSearch: { limit: envInt("QUOTA_JOB_SEARCH_PER_HOUR", 6), windowMins: 60 },
+  /** free plan: fresh searches per week (Pro isn't limited by this) */
+  jobSearchFree: { limit: envInt("QUOTA_FREE_SEARCHES_PER_WEEK", 2), windowMins: 7 * 24 * 60 },
   resumeParse: { limit: envInt("QUOTA_RESUME_PARSE_PER_HOUR", 10), windowMins: 60 },
   roleDraft: { limit: envInt("QUOTA_ROLE_DRAFT_PER_HOUR", 15), windowMins: 60 },
   candidateSearch: { limit: envInt("QUOTA_CANDIDATE_SEARCH_PER_HOUR", 20), windowMins: 60 },
@@ -547,4 +605,285 @@ export async function quotaRetryAfterMins(uid: string, kind: string, windowMins:
   if (!r?.oldest) return 0;
   const freeAt = new Date(r.oldest).getTime() + windowMins * 60_000;
   return Math.max(1, Math.ceil((freeAt - Date.now()) / 60_000));
+}
+
+/* ── plans, unlocks, billing ───────────────────────────────────────── */
+
+/**
+ * The paywall is live only together with payments (BILLING_ENABLED=1): until
+ * then everyone sees everything, so nobody hits a lock they can't open.
+ */
+export const paywallOn = () => process.env.BILLING_ENABLED === "1";
+
+/** New results of each search a free user can see in full. */
+export const FREE_PICKS_PER_SEARCH = 3;
+/** Unlocks in one pack. */
+export const PACK_CREDITS = 5;
+/** Subscription states that keep Pro (past_due: Stripe is still retrying the card). */
+const PRO_STATUSES = ["active", "trialing", "past_due"];
+
+/** Sees every job and feature: a Pro subscriber, or anyone while the paywall is off. */
+export async function hasFullAccess(uid: string): Promise<boolean> {
+  return !paywallOn() || (await isPro(uid));
+}
+
+export async function isPro(uid: string): Promise<boolean> {
+  if (!isId(uid)) return false;
+  const [r] = await db()
+    .select({ status: s.subscriptions.status, end: s.subscriptions.currentPeriodEnd })
+    .from(s.subscriptions)
+    .where(eq(s.subscriptions.userId, uid))
+    .limit(1);
+  return Boolean(r && PRO_STATUSES.includes(r.status) && (!r.end || r.end.getTime() > Date.now()));
+}
+
+export async function getEntitlement(uid: string): Promise<Entitlement> {
+  const [[u], [sub], pro] = await Promise.all([
+    db().select().from(s.users).where(eq(s.users.id, uid)).limit(1),
+    db().select().from(s.subscriptions).where(eq(s.subscriptions.userId, uid)).limit(1),
+    isPro(uid),
+  ]);
+  return {
+    plan: pro ? "pro" : "free",
+    credits: u?.unlockCredits ?? 0,
+    email: u?.email ?? null,
+    renewsAt: pro && sub?.currentPeriodEnd ? sub.currentPeriodEnd.toISOString() : null,
+    cancelAtPeriodEnd: pro ? (sub?.cancelAtPeriodEnd ?? false) : false,
+    digestEnabled: u?.digestEnabled ?? true,
+  };
+}
+
+export type UnlockResult = "unlocked" | "already" | "no_credits" | "not_found";
+
+/** Spends one pack credit to unlock a job for good. */
+export async function unlockJob(uid: string, jobId: string): Promise<UnlockResult> {
+  if (!isId(jobId)) return "not_found";
+  if (await isPro(uid)) return "already";
+  return db().transaction(async (tx) => {
+    const [job] = await tx
+      .select({ unlockedAt: s.jobResults.unlockedAt })
+      .from(s.jobResults)
+      .where(and(eq(s.jobResults.id, jobId), eq(s.jobResults.candidateId, uid)))
+      .limit(1);
+    if (!job) return "not_found";
+    if (job.unlockedAt) return "already";
+    const spent = await tx
+      .update(s.users)
+      .set({ unlockCredits: sql`${s.users.unlockCredits} - 1` })
+      .where(and(eq(s.users.id, uid), sql`${s.users.unlockCredits} > 0`))
+      .returning({ left: s.users.unlockCredits });
+    if (spent.length === 0) return "no_credits";
+    await tx.update(s.jobResults).set({ unlockedAt: sql`now()`, unlockVia: "credit" }).where(eq(s.jobResults.id, jobId));
+    return "unlocked";
+  });
+}
+
+export const normEmail = (e: string) => e.trim().toLowerCase();
+const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+export const validEmail = (e: string) => e.length <= 254 && EMAIL.test(normEmail(e));
+
+export async function userIdByEmail(email: string): Promise<string | null> {
+  const [u] = await db().select({ id: s.users.id }).from(s.users).where(eq(s.users.email, normEmail(email))).limit(1);
+  return u?.id ?? null;
+}
+
+/**
+ * Gives a user an email (on payment or first sign-in). Never moves an email
+ * that already belongs to someone else; returns false in that case.
+ */
+export async function attachEmail(uid: string, email: string, verified: boolean): Promise<boolean> {
+  const e = normEmail(email);
+  const owner = await userIdByEmail(e);
+  if (owner && owner !== uid) return false;
+  await db()
+    .update(s.users)
+    .set({ email: e, ...(verified ? { emailVerifiedAt: sql`coalesce(${s.users.emailVerifiedAt}, now())` } : {}) })
+    .where(eq(s.users.id, uid));
+  return true;
+}
+
+export async function addCredits(uid: string, n: number) {
+  await db()
+    .update(s.users)
+    .set({ unlockCredits: sql`${s.users.unlockCredits} + ${n}` })
+    .where(eq(s.users.id, uid));
+}
+
+export interface SubscriptionState {
+  userId: string;
+  stripeCustomerId: string;
+  stripeSubscriptionId: string;
+  status: string;
+  priceId: string;
+  currentPeriodEnd: Date | null;
+  cancelAtPeriodEnd: boolean;
+}
+
+export async function upsertSubscription(sub: SubscriptionState) {
+  const { userId, ...rest } = sub;
+  await db()
+    .insert(s.subscriptions)
+    .values({ userId, ...rest })
+    .onConflictDoUpdate({ target: s.subscriptions.userId, set: { ...rest, updatedAt: sql`now()` } });
+}
+
+/** Updates a subscription we already know (by its Stripe id); returns false if unknown. */
+export async function updateSubscriptionById(stripeSubscriptionId: string, patch: Partial<Omit<SubscriptionState, "userId" | "stripeSubscriptionId">>) {
+  const r = await db()
+    .update(s.subscriptions)
+    .set({ ...patch, updatedAt: sql`now()` })
+    .where(eq(s.subscriptions.stripeSubscriptionId, stripeSubscriptionId))
+    .returning({ userId: s.subscriptions.userId });
+  return r.length > 0;
+}
+
+export async function stripeCustomerFor(uid: string): Promise<string | null> {
+  const [r] = await db().select({ c: s.users.stripeCustomerId }).from(s.users).where(eq(s.users.id, uid)).limit(1);
+  return r?.c ?? null;
+}
+
+export async function setStripeCustomer(uid: string, customerId: string) {
+  await db().update(s.users).set({ stripeCustomerId: customerId }).where(and(eq(s.users.id, uid), isNull(s.users.stripeCustomerId)));
+}
+
+export async function userByStripeCustomer(customerId: string): Promise<string | null> {
+  const [r] = await db().select({ id: s.users.id }).from(s.users).where(eq(s.users.stripeCustomerId, customerId)).limit(1);
+  return r?.id ?? null;
+}
+
+/** Grants a paid pack once per payment (webhooks may repeat); returns true if credits were added. */
+export async function grantPack(uid: string, paymentIntentId: string, credits: number): Promise<boolean> {
+  return db().transaction(async (tx) => {
+    const r = await tx.insert(s.packPurchases).values({ paymentIntentId, userId: uid, credits }).onConflictDoNothing().returning({ id: s.packPurchases.paymentIntentId });
+    if (r.length === 0) return false;
+    await tx.update(s.users).set({ unlockCredits: sql`${s.users.unlockCredits} + ${credits}` }).where(eq(s.users.id, uid));
+    return true;
+  });
+}
+
+/** Takes back a refunded or disputed pack's unspent credits (never below zero). */
+export async function reversePack(paymentIntentId: string): Promise<boolean> {
+  return db().transaction(async (tx) => {
+    const [p] = await tx
+      .update(s.packPurchases)
+      .set({ reversedAt: sql`now()` })
+      .where(and(eq(s.packPurchases.paymentIntentId, paymentIntentId), isNull(s.packPurchases.reversedAt)))
+      .returning({ userId: s.packPurchases.userId, credits: s.packPurchases.credits });
+    if (!p) return false;
+    await tx
+      .update(s.users)
+      .set({ unlockCredits: sql`greatest(0, ${s.users.unlockCredits} - ${p.credits})` })
+      .where(eq(s.users.id, p.userId));
+    return true;
+  });
+}
+
+/** Records a webhook event; false if it was already handled. */
+export async function claimStripeEvent(id: string, type: string): Promise<boolean> {
+  const r = await db().insert(s.stripeEvents).values({ id, type }).onConflictDoNothing().returning({ id: s.stripeEvents.id });
+  return r.length > 0;
+}
+
+/** Lets a webhook be retried if handling failed after it was claimed. */
+export async function releaseStripeEvent(id: string) {
+  await db().delete(s.stripeEvents).where(eq(s.stripeEvents.id, id));
+}
+
+/* ── sign-in links ─────────────────────────────────────────────────── */
+
+const LOGIN_TTL_MINS = 20;
+
+async function sha256(x: string): Promise<string> {
+  const h = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(x)));
+  return Array.from(h, (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+/** Creates a one-time sign-in token for an email (the raw token goes in the emailed link only). */
+export async function createLoginToken(email: string): Promise<string> {
+  const raw = new Uint8Array(32);
+  crypto.getRandomValues(raw);
+  const token = btoa(String.fromCharCode(...raw)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  await db()
+    .insert(s.loginTokens)
+    .values({ tokenHash: await sha256(token), email: normEmail(email), expiresAt: new Date(Date.now() + LOGIN_TTL_MINS * 60_000) });
+  return token;
+}
+
+/** Spends a sign-in token; returns its email if it was valid, unused and unexpired. */
+export async function consumeLoginToken(token: string): Promise<string | null> {
+  if (!token || token.length > 200) return null;
+  const [r] = await db()
+    .update(s.loginTokens)
+    .set({ usedAt: sql`now()` })
+    .where(and(eq(s.loginTokens.tokenHash, await sha256(token)), isNull(s.loginTokens.usedAt), sql`${s.loginTokens.expiresAt} > now()`))
+    .returning({ email: s.loginTokens.email });
+  return r?.email ?? null;
+}
+
+/** Sign-in links sent to an email recently (to rate-limit requests). */
+export async function recentLoginTokens(email: string, withinMins = 60): Promise<number> {
+  const [r] = await db()
+    .select({ n: sql<number>`count(*)::int` })
+    .from(s.loginTokens)
+    .where(and(eq(s.loginTokens.email, normEmail(email)), sql`${s.loginTokens.createdAt} > now() - make_interval(mins => ${withinMins})`));
+  return r?.n ?? 0;
+}
+
+/* ── weekly digest ─────────────────────────────────────────────────── */
+
+/** Pro users with a profile, an email and the digest on, not emailed for `everyDays`. */
+export async function digestDue(limit: number, everyDays = 7): Promise<{ id: string; email: string }[]> {
+  const rows = await db()
+    .select({ id: s.users.id, email: s.users.email })
+    .from(s.users)
+    .innerJoin(s.subscriptions, eq(s.subscriptions.userId, s.users.id))
+    .innerJoin(s.candidates, eq(s.candidates.userId, s.users.id))
+    .where(
+      and(
+        eq(s.users.digestEnabled, true),
+        sql`${s.users.email} is not null`,
+        inArray(s.subscriptions.status, PRO_STATUSES),
+        or(isNull(s.subscriptions.currentPeriodEnd), sql`${s.subscriptions.currentPeriodEnd} > now()`),
+        or(isNull(s.users.lastDigestAt), sql`${s.users.lastDigestAt} < now() - make_interval(days => ${everyDays})`),
+      ),
+    )
+    .orderBy(asc(s.users.lastDigestAt))
+    .limit(limit);
+  return rows.filter((r): r is { id: string; email: string } => Boolean(r.email));
+}
+
+/** Of these posting URLs, the ones not yet emailed to the user. */
+export async function unsentUrls(uid: string, urls: string[]): Promise<Set<string>> {
+  if (urls.length === 0) return new Set();
+  const sent = await db()
+    .select({ url: s.digestSent.url })
+    .from(s.digestSent)
+    .where(and(eq(s.digestSent.userId, uid), inArray(s.digestSent.url, urls)));
+  const done = new Set(sent.map((r) => r.url));
+  return new Set(urls.filter((u) => !done.has(u)));
+}
+
+export async function markDigestSent(uid: string, urls: string[]) {
+  await db().transaction(async (tx) => {
+    if (urls.length) await tx.insert(s.digestSent).values(urls.map((url) => ({ userId: uid, url }))).onConflictDoNothing();
+    await tx.update(s.users).set({ lastDigestAt: sql`now()` }).where(eq(s.users.id, uid));
+  });
+}
+
+export async function setDigestEnabled(uid: string, on: boolean) {
+  await db().update(s.users).set({ digestEnabled: on }).where(eq(s.users.id, uid));
+}
+
+/* ── résumé reviews ────────────────────────────────────────────────── */
+
+export async function getResumeReview(uid: string): Promise<{ profileKey: string; fixes: ResumeFix[] } | null> {
+  const [r] = await db().select().from(s.resumeReviews).where(eq(s.resumeReviews.userId, uid)).limit(1);
+  return r ? { profileKey: r.profileKey, fixes: r.fixes } : null;
+}
+
+export async function saveResumeReview(uid: string, profileKey: string, fixes: ResumeFix[]) {
+  await db()
+    .insert(s.resumeReviews)
+    .values({ userId: uid, profileKey, fixes })
+    .onConflictDoUpdate({ target: s.resumeReviews.userId, set: { profileKey, fixes, createdAt: sql`now()` } });
 }

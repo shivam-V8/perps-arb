@@ -19,7 +19,8 @@ export async function middleware(req: NextRequest) {
   const headers = new Headers(req.headers);
   headers.set(USER_ID_HEADER, id);
   const res = NextResponse.next({ request: { headers } });
-  if (fresh) {
+  // the magic-link route sets the final identity cookie itself
+  if (fresh && req.nextUrl.pathname !== "/auth/verify") {
     res.cookies.set(SESSION_COOKIE, fresh, {
       httpOnly: true,
       sameSite: "lax",

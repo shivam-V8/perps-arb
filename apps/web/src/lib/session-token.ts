@@ -26,7 +26,31 @@ async function hmac(value: string): Promise<string> {
 
 export async function issueToken(): Promise<{ id: string; token: string }> {
   const id = crypto.randomUUID();
-  return { id, token: `${id}.${await hmac(id)}` };
+  return { id, token: await tokenFor(id) };
+}
+
+/** Signed cookie value for an existing identity (used when signing in to an account). */
+export async function tokenFor(id: string): Promise<string> {
+  return `${id}.${await hmac(id)}`;
+}
+
+/**
+ * A signed token for one purpose (e.g. "unsubscribe"). Different from the session
+ * token, so a link in an email can never be used as a login cookie.
+ */
+export async function purposeToken(purpose: string, id: string): Promise<string> {
+  return `${id}.${await hmac(`${purpose}:${id}`)}`;
+}
+
+export async function verifyPurposeToken(purpose: string, token: string | null | undefined): Promise<string | null> {
+  if (!token) return null;
+  const [id, sig] = token.split(".");
+  if (!id || !sig || !UUID.test(id)) return null;
+  const expected = await hmac(`${purpose}:${id}`);
+  if (expected.length !== sig.length) return null;
+  let diff = 0;
+  for (let i = 0; i < sig.length; i++) diff |= expected.charCodeAt(i) ^ sig.charCodeAt(i);
+  return diff === 0 ? id : null;
 }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;

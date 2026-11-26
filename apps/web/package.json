@@ -13,7 +13,8 @@
     "smoke:ats": "tsx scripts/smoke-ats.ts",
     "cf:build": "node scripts/cf.mjs build",
     "cf:preview": "node scripts/cf.mjs preview",
-    "cf:deploy": "node scripts/cf.mjs deploy"
+    "cf:deploy": "node scripts/cf.mjs deploy",
+    "stripe:setup": "tsx --env-file=.env.development.local scripts/stripe-setup.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.14.0",
@@ -33,6 +34,7 @@
     "react-dom": "^19.0.0",
     "server-only": "^0.0.1",
     "sonner": "^2.0.8",
+    "stripe": "^23.2.0",
     "tailwind-merge": "^3.7.1",
     "zod": "^4.6.7"
   },

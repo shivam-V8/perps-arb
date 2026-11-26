@@ -1,12 +1,14 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "chainmatch",
-  "main": ".open-next/worker.js",
+  "main": "custom-worker.ts",
   "compatibility_date": "2026-11-01",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
   "observability": { "enabled": true },
   // Production domains (Workers custom domains; DNS + certificates managed by Cloudflare).
+  // hourly: sends weekly digests to the few Pro users who are due (custom-worker.ts)
+  "triggers": { "crons": ["0 * * * *"] },
   "workers_dev": true,
   "routes": [{ "pattern": "chainmatch.ai", "custom_domain": true }],
   // Postgres (Neon) through Hyperdrive (pooled connections close to the database).

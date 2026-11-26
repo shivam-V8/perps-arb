@@ -21,6 +21,8 @@ import {
 import Link from "next/link";
 import { Logo } from "@/components/brand/logo";
 import { ResumeFlow } from "@/components/landing/resume-flow";
+import { PricingTable } from "@/components/site/pricing-table";
+import { SiteFooter } from "@/components/site/site-chrome";
 import { Button } from "@/components/ui/button";
 
 export default function Landing() {
@@ -31,8 +33,9 @@ export default function Landing() {
       <HowItWorks />
       <Compare />
       <Privacy />
+      <Pricing />
       <FinalCta />
-      <Footer />
+      <SiteFooter />
     </div>
   );
 }
@@ -49,6 +52,12 @@ function Hero() {
           <a href="#privacy" className="hidden rounded-full px-3 py-1.5 text-foreground/70 hover:text-foreground md:block">
             Privacy
           </a>
+          <a href="#pricing" className="hidden rounded-full px-3 py-1.5 text-foreground/70 hover:text-foreground md:block">
+            Pricing
+          </a>
+          <Link href="/signin" className="hidden rounded-full px-3 py-1.5 text-foreground/70 hover:text-foreground sm:block">
+            Sign in
+          </Link>
           <Button asChild size="sm" variant="ghost" className="rounded-full">
             <Link href="/onboarding">Open app</Link>
           </Button>
@@ -150,6 +159,20 @@ function HowItWorks() {
   );
 }
 
+function Pricing() {
+  return (
+    <section id="pricing" className="scroll-mt-10 bg-white px-4 py-24">
+      <div className="mx-auto max-w-6xl">
+        <h2 className="max-w-xl font-display text-4xl font-bold tracking-tight sm:text-5xl">Start free. Go Pro when it&apos;s working.</h2>
+        <p className="mt-3 max-w-xl text-lg text-foreground/65">Every search shows your top 3 matches free. Unlock the rest when you&apos;re ready.</p>
+        <div className="mt-12">
+          <PricingTable />
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function Compare() {
   const rows = [
     ["Search a dozen job boards by keyword", "One search across careers pages and boards, from your résumé"],
@@ -226,13 +249,3 @@ function FinalCta() {
   );
 }
 
-function Footer() {
-  return (
-    <footer className="border-t border-black/[0.06]">
-      <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-4 px-4 py-8 text-sm text-muted-foreground sm:flex-row sm:items-center">
-        <Logo />
-        <p>© {new Date().getFullYear()} ChainMatch · Résumé-to-job matching for any field</p>
-      </div>
-    </footer>
-  );
-}

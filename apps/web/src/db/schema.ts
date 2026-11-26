@@ -21,6 +21,15 @@ export const users = pgTable("users", {
   id: uuid("id").primaryKey(),
   role: text("role", { enum: ["candidate", "recruiter"] }).notNull(),
   fullName: text("full_name").notNull().default(""),
+  /** set when the user pays or signs in with a magic link; lower-cased */
+  email: text("email").unique(),
+  emailVerifiedAt: timestamp("email_verified_at", { withTimezone: true }),
+  /** this user's Stripe Customer, reused for every purchase */
+  stripeCustomerId: text("stripe_customer_id").unique(),
+  /** job unlocks bought in packs, not yet spent */
+  unlockCredits: integer("unlock_credits").notNull().default(0),
+  digestEnabled: boolean("digest_enabled").notNull().default(true),
+  lastDigestAt: timestamp("last_digest_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -138,6 +147,9 @@ export const jobResults = pgTable(
     /** true when the posting was read from (or confirmed in) the company's live ATS feed */
     verified: boolean("verified").notNull().default(false),
     ats: text("ats"),
+    /** visible without Pro: free top picks of a search, or unlocked with a credit */
+    unlockedAt: timestamp("unlocked_at", { withTimezone: true }),
+    unlockVia: text("unlock_via", { enum: ["free", "credit"] }),
     fetchedAt: timestamp("fetched_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [unique("job_results_candidate_url").on(t.candidateId, t.url)],
@@ -199,3 +211,75 @@ export const usageEvents = pgTable(
   },
   (t) => [index("usage_events_lookup_idx").on(t.userId, t.kind, t.at)],
 );
+
+/* ── billing, accounts, email ─────────────────────────────────────── */
+
+/** Stripe subscription state per user (Pro), kept in sync by the webhook. */
+export const subscriptions = pgTable("subscriptions", {
+  userId: uuid("user_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  stripeCustomerId: text("stripe_customer_id").notNull(),
+  stripeSubscriptionId: text("stripe_subscription_id").notNull().unique(),
+  status: text("status").notNull(),
+  priceId: text("price_id").notNull().default(""),
+  currentPeriodEnd: timestamp("current_period_end", { withTimezone: true }),
+  cancelAtPeriodEnd: boolean("cancel_at_period_end").notNull().default(false),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/** One row per paid unlock pack, so a refund or dispute can take its credits back. */
+export const packPurchases = pgTable("pack_purchases", {
+  paymentIntentId: text("payment_intent_id").primaryKey(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  credits: integer("credits").notNull(),
+  reversedAt: timestamp("reversed_at", { withTimezone: true }),
+  at: timestamp("at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/** Stripe webhook events already applied (webhooks can be delivered more than once). */
+export const stripeEvents = pgTable("stripe_events", {
+  id: text("id").primaryKey(),
+  type: text("type").notNull(),
+  at: timestamp("at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/** One-time sign-in links (only the SHA-256 of the token is stored). */
+export const loginTokens = pgTable(
+  "login_tokens",
+  {
+    tokenHash: text("token_hash").primaryKey(),
+    email: text("email").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    usedAt: timestamp("used_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("login_tokens_email_idx").on(t.email, t.createdAt)],
+);
+
+/** Postings already emailed to a user, so a digest never repeats a job. */
+export const digestSent = pgTable(
+  "digest_sent",
+  {
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    url: text("url").notNull(),
+    at: timestamp("at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.url] })],
+);
+
+export type ResumeFix = { section: string; issue: string; fix: string; example: string };
+
+/** Latest résumé review per candidate; `profileKey` changes when the profile does. */
+export const resumeReviews = pgTable("resume_reviews", {
+  userId: uuid("user_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  profileKey: text("profile_key").notNull(),
+  fixes: jsonb("fixes").$type<ResumeFix[]>().notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});

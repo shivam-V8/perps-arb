@@ -5,6 +5,7 @@ import { SetupNotice } from "@/components/app/setup-notice";
 import { Logo } from "@/components/brand/logo";
 import { AvatarMark } from "@/components/profile/avatar-mark";
 import { dbConfigured } from "@/db";
+import { getEntitlement } from "@/server/data";
 import { currentViewer } from "@/server/session";
 
 // per-user pages: never prerender or cache
@@ -16,6 +17,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   if (!viewer?.role) redirect("/onboarding");
 
   const badges: Record<string, number> = {};
+  const ent = await getEntitlement(viewer.id);
 
   return (
     <div className="flex min-h-dvh flex-col">
@@ -24,9 +26,18 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <Logo href={viewer.role === "candidate" ? "/jobs" : "/roles"} />
           <DesktopNav role={viewer.role} badges={badges} />
           <div className="flex items-center gap-2.5">
-            <span className="hidden rounded-full border border-black/10 px-2.5 py-0.5 text-xs text-muted-foreground sm:inline">
-              {viewer.role === "candidate" ? "Job seeker" : "Recruiter"}
-            </span>
+            {ent.plan === "pro" ? (
+              <span className="rounded-full bg-brand px-2.5 py-0.5 text-xs font-semibold text-white">Pro</span>
+            ) : (
+              <span className="hidden rounded-full border border-black/10 px-2.5 py-0.5 text-xs text-muted-foreground sm:inline">
+                {viewer.role === "candidate" ? "Job seeker" : "Recruiter"}
+              </span>
+            )}
+            {!ent.email && (
+              <Link href="/signin" className="text-sm text-muted-foreground hover:text-foreground">
+                Sign in
+              </Link>
+            )}
             <Link href="/profile" aria-label="Your profile">
               <AvatarMark name={viewer.fullName || (viewer.role === "candidate" ? "You" : "Recruiter")} tone="slate" size="sm" />
             </Link>

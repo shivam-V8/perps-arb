@@ -63,8 +63,15 @@ export async function setVisibility(visible: boolean) {
 
 export async function decideJob(jobId: string, decision: Decision | null) {
   const v = await requireViewer("candidate");
-  await data.decideJob(v.id, jobId, decision);
+  const ok = await data.decideJob(v.id, jobId, decision);
   revalidatePath("/saved");
+  return { ok };
+}
+
+export async function setDigest(on: boolean) {
+  const v = await requireViewer("candidate");
+  await data.setDigestEnabled(v.id, on);
+  revalidatePath("/profile");
 }
 
 export async function saveRole(input: z.infer<typeof RoleDraftSchema>) {

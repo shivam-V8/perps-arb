@@ -119,3 +119,17 @@ export const FeedRankSchema = z.object({
     }),
   ),
 });
+
+/** Concrete résumé fixes, aimed at the jobs the candidate is matching. */
+export const ResumeReviewSchema = z.object({
+  fixes: z
+    .array(
+      z.object({
+        section: z.string().describe("Résumé section, e.g. 'Headline', 'Summary', 'Experience: <role>', 'Skills'"),
+        issue: z.string().describe("What's weak or missing, max 25 words"),
+        fix: z.string().describe("What to change, max 30 words"),
+        example: z.string().describe("A rewritten line they could paste, using only facts from their profile; empty if not applicable"),
+      }),
+    )
+    .describe("3-6 fixes, most impactful first"),
+});

@@ -66,6 +66,21 @@ export interface JobPosting {
   /** read from (or confirmed in) the company's live ATS feed */
   verified?: boolean;
   ats?: string | null;
+  /** behind the paywall: only id, title, location, remote and score are real; the rest is blank */
+  locked?: boolean;
+}
+
+export type Plan = "free" | "pro";
+
+export interface Entitlement {
+  plan: Plan;
+  /** job unlocks left from packs */
+  credits: number;
+  email: string | null;
+  /** Pro renewal / end date (ISO), when subscribed */
+  renewsAt: string | null;
+  cancelAtPeriodEnd: boolean;
+  digestEnabled: boolean;
 }
 
 export interface CompanyLead {

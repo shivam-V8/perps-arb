@@ -1,17 +1,18 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Building2, ExternalLink, Loader2, RefreshCw, Search, Sparkles } from "lucide-react";
+import { Building2, Crown, ExternalLink, Loader2, Lock, RefreshCw, Search, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { decideJob } from "@/app/actions";
+import { PaywallDialog } from "@/components/billing/paywall";
 import { JobCard } from "@/components/cards/job-card";
 import { SwipeDeck } from "@/components/swipe/swipe-deck";
 import { Button } from "@/components/ui/button";
 import { companyDomainFor } from "@/lib/company-logo";
-import type { CompanyLead, Decision, JobPosting } from "@/lib/types";
+import type { CompanyLead, Decision, Entitlement, JobPosting } from "@/lib/types";
 import { CompanyLogo } from "@/components/profile/company-logo";
 
 const STEPS = [
@@ -27,14 +28,74 @@ export function JobsBoard({
   initialJobs,
   companies,
   autoSearch,
+  entitlement,
+  billingOpen,
+  paid,
 }: {
   headline: string;
   initialJobs: JobPosting[];
   companies: CompanyLead[];
   autoSearch: boolean;
+  entitlement: Entitlement;
+  billingOpen: boolean;
+  /** set when returning from a successful checkout */
+  paid?: string;
 }) {
   const router = useRouter();
   const [jobs, setJobs] = useState(initialJobs);
+  const [credits, setCredits] = useState(entitlement.credits);
+  const [paywall, setPaywall] = useState<{ open: boolean; reason?: string }>({ open: false });
+  const pro = entitlement.plan === "pro";
+  const lockedCount = jobs.filter((j) => j.locked).length;
+
+  useEffect(() => setCredits(entitlement.credits), [entitlement.credits]);
+
+  // back from Stripe: the webhook usually lands within seconds, so refresh until it has
+  useEffect(() => {
+    if (!paid) return;
+    toast.success(paid === "pack" ? "Payment received. Your 5 unlocks are on their way." : "Welcome to Pro! Unlocking your matches…");
+    let n = 0;
+    const t = setInterval(() => {
+      router.refresh();
+      if (++n >= 6) {
+        clearInterval(t);
+        router.replace("/jobs");
+      }
+    }, 2500);
+    return () => clearInterval(t);
+  }, [paid, router]);
+
+  const unlock = useCallback(
+    async (job: JobPosting) => {
+      if (credits <= 0) {
+        setPaywall({ open: true, reason: `Unlock this ${job.score}% match and every other one with Pro, or buy 5 unlocks.` });
+        return;
+      }
+      const res = await fetch("/api/jobs/unlock", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ jobId: job.id }),
+      }).catch(() => null);
+      const json = res ? await res.json().catch(() => ({})) : {};
+      if (res?.status === 402) return setPaywall({ open: true, reason: "You're out of unlocks." });
+      if (!res?.ok || !json.job) return toast.error(json.error ?? "Couldn't unlock that job.");
+      setJobs((list) => list.map((j) => (j.id === job.id ? (json.job as JobPosting) : j)));
+      setCredits(json.credits ?? 0);
+      toast.success("Unlocked", { description: `${json.job.title} · ${json.job.company}` });
+    },
+    [credits],
+  );
+
+  const canDecide = useCallback(
+    (job: JobPosting, d: Decision) => {
+      if (job.locked && d === "like") {
+        unlock(job);
+        return false;
+      }
+      return true;
+    },
+    [unlock],
+  );
   const [searching, setSearching] = useState(false);
   const [step, setStep] = useState(0);
   const started = useRef(false);
@@ -49,6 +110,10 @@ export function JobsBoard({
     clearInterval(tick);
     const json = res ? await res.json().catch(() => ({})) : {};
     setSearching(false);
+    if (res?.status === 402 && json.paywall) {
+      setPaywall({ open: true, reason: json.error });
+      return;
+    }
     if (!res?.ok) {
       toast.error(json.error ?? "Search failed. Try again.");
       return;
@@ -80,6 +145,16 @@ export function JobsBoard({
           <div className="min-w-0">
             <h1 className="font-display text-3xl font-semibold tracking-tight">Jobs for you</h1>
             <p className="truncate text-sm text-muted-foreground">Live postings for “{headline}”</p>
+            {pro ? (
+              <p className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-brand">
+                <Crown className="size-3.5" /> Pro: every match unlocked
+              </p>
+            ) : lockedCount > 0 ? (
+              <button type="button" onClick={() => setPaywall({ open: true })} className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-foreground/70 hover:text-foreground">
+                <Lock className="size-3" /> {jobs.length - lockedCount} of {jobs.length} matches open
+                {credits > 0 ? ` · ${credits} unlock${credits === 1 ? "" : "s"} left` : " · unlock all"}
+              </button>
+            ) : null}
           </div>
           <Button variant="outline" size="sm" className="shrink-0 rounded-full border-black/10 bg-white" disabled={searching} onClick={runSearch}>
             {searching ? <Loader2 className="animate-spin" /> : <RefreshCw />}
@@ -92,8 +167,9 @@ export function JobsBoard({
         ) : (
           <SwipeDeck
             items={jobs}
-            render={(job) => <JobCard job={job} />}
+            render={(job) => <JobCard job={job} onUnlock={unlock} credits={credits} />}
             onDecide={onDecide}
+            canDecide={canDecide}
             likeLabel="Save"
             passLabel="Pass"
             empty={
@@ -121,6 +197,8 @@ export function JobsBoard({
           </p>
         )}
       </div>
+
+      <PaywallDialog open={paywall.open} onOpenChange={(open) => setPaywall((p) => ({ ...p, open }))} reason={paywall.reason} email={entitlement.email} billingOpen={billingOpen} />
 
       <aside className="lg:pt-16">
         <h2 className="flex items-center gap-1.5 text-sm font-semibold">
