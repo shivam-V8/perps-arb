@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { canonicalRedirect } from "@/lib/canonical-host";
 import { issueToken, SESSION_COOKIE, SESSION_MAX_AGE, USER_ID_HEADER, verifyToken } from "@/lib/session-token";
 
 /**
@@ -8,6 +9,12 @@ import { issueToken, SESSION_COOKIE, SESSION_MAX_AGE, USER_ID_HEADER, verifyToke
  * so a client can't supply its own.
  */
 export async function middleware(req: NextRequest) {
+  // one public address: https://chainmatch.ai (www, workers.dev and http redirect there)
+  if (process.env.NODE_ENV === "production") {
+    const to = canonicalRedirect(req.url, process.env.NEXT_PUBLIC_SITE_URL, req.headers.get("x-forwarded-proto"));
+    if (to) return NextResponse.redirect(to, 301);
+  }
+
   let id = await verifyToken(req.cookies.get(SESSION_COOKIE)?.value);
   let fresh: string | null = null;
   if (!id) {

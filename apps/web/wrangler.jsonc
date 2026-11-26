@@ -10,7 +10,11 @@
   // hourly: sends weekly digests to the few Pro users who are due (custom-worker.ts)
   "triggers": { "crons": ["0 * * * *"] },
   "workers_dev": true,
-  "routes": [{ "pattern": "chainmatch.ai", "custom_domain": true }],
+  // www redirects to the apex in middleware (src/lib/canonical-host.ts)
+  "routes": [
+    { "pattern": "chainmatch.ai", "custom_domain": true },
+    { "pattern": "www.chainmatch.ai", "custom_domain": true }
+  ],
   // Postgres (Neon) through Hyperdrive (pooled connections close to the database).
   "hyperdrive": [{ "binding": "HYPERDRIVE", "id": "21601a901f794e3f90bcd06ed30b1ca7", "localConnectionString": "postgres://chainmatch:chainmatch@localhost:5433/chainmatch" }],
   // Secrets (set with `wrangler secret put`): ANTHROPIC_API_KEY, FIRECRAWL_API_KEY, SESSION_SECRET, DATABASE_URL.

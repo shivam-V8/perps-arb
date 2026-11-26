@@ -10,6 +10,8 @@ const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono"
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
+  // each page declares its own https://chainmatch.ai URL as canonical
+  alternates: { canonical: "./" },
   title: {
     default: "ChainMatch — Upload your résumé, swipe on jobs that fit",
     template: "%s · ChainMatch",
