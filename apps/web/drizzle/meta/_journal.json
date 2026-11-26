@@ -22,6 +22,20 @@
       "when": 1795607578686,
       "tag": "0002_low_spectrum",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1795682821184,
+      "tag": "0003_married_marten_broadcloak",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1795682920467,
+      "tag": "0004_dapper_puma",
+      "breakpoints": true
     }
   ]
 }

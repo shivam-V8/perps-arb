@@ -10,7 +10,9 @@ import { decideJob } from "@/app/actions";
 import { JobCard } from "@/components/cards/job-card";
 import { SwipeDeck } from "@/components/swipe/swipe-deck";
 import { Button } from "@/components/ui/button";
+import { companyDomainFor } from "@/lib/company-logo";
 import type { CompanyLead, Decision, JobPosting } from "@/lib/types";
+import { CompanyLogo } from "@/components/profile/company-logo";
 
 const STEPS = [
   "Reading your profile…",
@@ -136,11 +138,16 @@ export function JobsBoard({
                   rel="noopener noreferrer"
                   className="group block rounded-2xl border border-black/[0.06] bg-white p-3.5 shadow-soft transition-shadow hover:shadow-lift"
                 >
-                  <p className="flex items-center justify-between text-sm font-semibold">
-                    {c.name}
-                    <ExternalLink className="size-3.5 text-muted-foreground group-hover:text-foreground" />
-                  </p>
-                  <p className="mt-0.5 text-xs leading-snug text-muted-foreground">{c.why}</p>
+                  <div className="flex items-start gap-3">
+                    <CompanyLogo name={c.name} domain={companyDomainFor({ companyDomain: c.domain, url: c.url, company: c.name })} size="sm" />
+                    <div className="min-w-0 flex-1">
+                      <p className="flex items-center justify-between text-sm font-semibold">
+                        {c.name}
+                        <ExternalLink className="size-3.5 text-muted-foreground group-hover:text-foreground" />
+                      </p>
+                      <p className="mt-0.5 text-xs leading-snug text-muted-foreground">{c.why}</p>
+                    </div>
+                  </div>
                 </a>
               </li>
             ))}

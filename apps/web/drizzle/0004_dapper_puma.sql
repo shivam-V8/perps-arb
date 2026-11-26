@@ -1,0 +1,1 @@
+ALTER TABLE "company_leads" ADD COLUMN "domain" text;

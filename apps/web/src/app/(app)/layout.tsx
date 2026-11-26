@@ -5,7 +5,6 @@ import { SetupNotice } from "@/components/app/setup-notice";
 import { Logo } from "@/components/brand/logo";
 import { AvatarMark } from "@/components/profile/avatar-mark";
 import { dbConfigured } from "@/db";
-import { countInvites } from "@/server/data";
 import { currentViewer } from "@/server/session";
 
 // per-user pages: never prerender or cache
@@ -17,7 +16,6 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   if (!viewer?.role) redirect("/onboarding");
 
   const badges: Record<string, number> = {};
-  if (viewer.role === "candidate") badges["/invites"] = await countInvites(viewer.id);
 
   return (
     <div className="flex min-h-dvh flex-col">

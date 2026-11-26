@@ -51,6 +51,8 @@ export interface JobPosting {
   id: string;
   title: string;
   company: string;
+  /** company's website domain, for its logo (null if unknown) */
+  companyDomain?: string | null;
   location: string;
   remote: RemotePref | "unknown";
   url: string;
@@ -68,6 +70,8 @@ export interface JobPosting {
 
 export interface CompanyLead {
   name: string;
+  /** company's website domain, for its logo (null if unknown) */
+  domain?: string | null;
   why: string;
   url: string;
 }

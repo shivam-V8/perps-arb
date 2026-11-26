@@ -1,4 +1,5 @@
 import { and, asc, desc, eq, inArray, isNull, ne, notExists, or, sql } from "drizzle-orm";
+import { cleanDomain } from "@/lib/company-logo";
 import { getDb, schema as s } from "@/db";
 import type {
   CandidateCardData,
@@ -84,6 +85,7 @@ function toJob(r: JobRow): JobPosting {
     id: r.id,
     title: r.title,
     company: r.company,
+    companyDomain: r.companyDomain,
     location: r.location,
     remote: r.remote as JobPosting["remote"],
     url: r.url,
@@ -215,21 +217,21 @@ export async function replaceJobResults(uid: string, jobs: Omit<JobPosting, "id"
     if (jobs.length) {
       await tx
         .insert(s.jobResults)
-        .values(jobs.map((j) => ({ ...j, verified: j.verified ?? false, ats: j.ats ?? null, candidateId: uid })))
+        .values(jobs.map((j) => ({ ...j, companyDomain: j.companyDomain ?? null, verified: j.verified ?? false, ats: j.ats ?? null, candidateId: uid })))
         .onConflictDoNothing();
     }
     await tx.delete(s.companyLeads).where(eq(s.companyLeads.candidateId, uid));
     if (companies.length) {
       await tx
         .insert(s.companyLeads)
-        .values(companies.map((c) => ({ ...c, candidateId: uid })))
+        .values(companies.map((c) => ({ name: c.name, why: c.why, url: c.url, domain: cleanDomain(c.domain), candidateId: uid })))
         .onConflictDoNothing();
     }
   });
 }
 
 export async function listCompanies(uid: string): Promise<CompanyLead[]> {
-  return db().select({ name: s.companyLeads.name, why: s.companyLeads.why, url: s.companyLeads.url }).from(s.companyLeads).where(eq(s.companyLeads.candidateId, uid));
+  return db().select({ name: s.companyLeads.name, domain: s.companyLeads.domain, why: s.companyLeads.why, url: s.companyLeads.url }).from(s.companyLeads).where(eq(s.companyLeads.candidateId, uid));
 }
 
 export async function decideJob(uid: string, jobId: string, decision: Decision | null) {

@@ -6,7 +6,8 @@ import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { decideJob } from "@/app/actions";
 import { hostOf, LiveBadge } from "@/components/cards/job-card";
-import { AvatarMark, toneFor } from "@/components/profile/avatar-mark";
+import { CompanyLogo } from "@/components/profile/company-logo";
+import { companyDomainFor } from "@/lib/company-logo";
 import { MatchRing } from "@/components/profile/match-ring";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -54,7 +55,7 @@ export function SavedJobs({ jobs: initial }: { jobs: JobPosting[] }) {
         {jobs.map((j) => (
           <li key={j.id} className="rounded-3xl border border-black/[0.06] bg-white p-5 shadow-soft">
             <div className="flex items-start gap-4">
-              <AvatarMark name={j.company} tone={toneFor(j.company)} size="md" square />
+              <CompanyLogo name={j.company} domain={companyDomainFor(j)} size="md" />
               <div className="min-w-0 flex-1">
                 <p className="font-display text-lg leading-tight font-semibold">{j.title}</p>
                 {j.verified && (
@@ -64,7 +65,6 @@ export function SavedJobs({ jobs: initial }: { jobs: JobPosting[] }) {
                 )}
                 <p className="text-sm text-foreground/70">
                   {j.company} · {j.location || "Location n/a"}
-                  {j.salary ? ` · ${j.salary}` : ""}
                 </p>
                 <p className="mt-2 text-sm text-foreground/75">{j.reasons[0]}</p>
                 <p className="mt-1 text-xs text-muted-foreground">

@@ -124,6 +124,7 @@ export const jobResults = pgTable(
       .references(() => candidates.userId, { onDelete: "cascade" }),
     title: text("title").notNull(),
     company: text("company").notNull(),
+    companyDomain: text("company_domain"),
     location: text("location").notNull().default(""),
     remote: text("remote").notNull().default("unknown"),
     url: text("url").notNull(),
@@ -149,6 +150,7 @@ export const companyLeads = pgTable(
       .notNull()
       .references(() => candidates.userId, { onDelete: "cascade" }),
     name: text("name").notNull(),
+    domain: text("domain"),
     why: text("why").notNull().default(""),
     url: text("url").notNull().default(""),
   },

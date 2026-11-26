@@ -82,6 +82,7 @@ describe("postingKey", () => {
 const job = (url: string, over: Partial<{ company: string; score: number }> = {}) => ({
   title: "Nurse",
   company: over.company ?? "Acme",
+  company_domain: "acme.com",
   location: "",
   remote: "onsite" as const,
   url,
@@ -120,6 +121,9 @@ describe("reconcile", () => {
       ["https://careers.other.com/jobs/5", false],
     ]);
     expect(pool.map((p) => p.url)).toEqual(["https://acme.com/careers?gh_jid=2220002"]);
+    // the reported company domain is kept (for the logo), under the app's field name
+    expect(kept[0]).toMatchObject({ companyDomain: "acme.com" });
+    expect(kept[0]).not.toHaveProperty("company_domain");
   });
 
   it("keeps web results when the board fetch failed", () => {
@@ -132,7 +136,7 @@ describe("reconcile", () => {
     const boards = discoverBoards(
       {
         jobs: [{ ...job("https://boards.greenhouse.io/acme/jobs/1"), remote: "onsite" }],
-        companies: [{ name: "Beta", why: "", url: "https://jobs.lever.co/beta" }, { name: "Acme", why: "", url: "https://job-boards.greenhouse.io/ACME" }],
+        companies: [{ name: "Beta", domain: "", why: "", url: "https://jobs.lever.co/beta" }, { name: "Acme", domain: "acme.com", why: "", url: "https://job-boards.greenhouse.io/ACME" }],
       },
       [{ ats: "ashby", token: "gamma", company: "Gamma" }],
     );

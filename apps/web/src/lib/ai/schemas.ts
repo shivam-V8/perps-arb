@@ -63,6 +63,7 @@ export const JobReportSchema = z.object({
     z.object({
       title: z.string(),
       company: z.string(),
+      company_domain: z.string().describe("The company's main website domain, e.g. 'stripe.com' (not a job board or ATS domain); empty string if unsure"),
       location: z.string(),
       remote: z.enum(["remote", "hybrid", "onsite", "any", "unknown"]),
       url: z.string().describe("Direct link to the posting, exactly as found"),
@@ -77,6 +78,7 @@ export const JobReportSchema = z.object({
   companies: z.array(
     z.object({
       name: z.string(),
+      domain: z.string().describe("The company's main website domain, e.g. 'stripe.com' (not a job board or ATS domain); empty string if unsure"),
       why: z.string().describe("Why this company suits the candidate, max 25 words"),
       url: z.string().describe("Careers page URL"),
     }),
@@ -110,6 +112,7 @@ export const FeedRankSchema = z.object({
   results: z.array(
     z.object({
       id: z.string(),
+      company_domain: z.string().describe("The company's main website domain, e.g. 'stripe.com' (not a job board or ATS domain); empty string if unsure"),
       score: z.number().describe("0-100 fit score"),
       summary: z.string().describe("One sentence on what the job is"),
       reasons: z.array(z.string()).describe("Exactly 2 reasons it fits (or a clear caveat), max 22 words each"),

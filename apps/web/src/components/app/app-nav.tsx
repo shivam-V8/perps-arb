@@ -1,6 +1,6 @@
 "use client";
 
-import { Bookmark, Briefcase, Inbox, Layers, MessageCircle, UserRound } from "lucide-react";
+import { Bookmark, Briefcase, Layers, MessageCircle, UserRound } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { Role } from "@/lib/types";
@@ -10,8 +10,6 @@ const NAV: Record<Role, { href: string; label: string; icon: React.ElementType }
   candidate: [
     { href: "/jobs", label: "Jobs", icon: Layers },
     { href: "/saved", label: "Saved", icon: Bookmark },
-    { href: "/invites", label: "Invites", icon: Inbox },
-    { href: "/matches", label: "Messages", icon: MessageCircle },
     { href: "/profile", label: "Profile", icon: UserRound },
   ],
   recruiter: [
