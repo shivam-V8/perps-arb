@@ -20,7 +20,8 @@ export function ChainSection() {
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start 70%", "end 60%"] });
   const [lit, setLit] = useState(reduce ? LINKS.length : 0);
   useMotionValueEvent(scrollYProgress, "change", (v) => {
-    if (!reduce) setLit(Math.min(LINKS.length, Math.floor(v * (LINKS.length + 1))));
+    // links stay lit once reached (no flicker when scrolling back up)
+    if (!reduce) setLit((prev) => Math.max(prev, Math.min(LINKS.length, Math.floor(v * (LINKS.length + 1)))));
   });
 
   return (

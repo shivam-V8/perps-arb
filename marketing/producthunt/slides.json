@@ -1,0 +1,51 @@
+[
+  {
+    "eyebrow": "The career chain-matching engine",
+    "lines": ["Every job,", "linked to you."],
+    "body": "Add a résumé or LinkedIn URL. ChainMatch finds live jobs on company boards and shows exactly why each one fits.",
+    "panel": "#e3f6ec",
+    "layout": "browser",
+    "images": ["hero.png"]
+  },
+  {
+    "eyebrow": "Swipe your matches",
+    "lines": ["Jobs ranked", "by how they fit."],
+    "body": "Every card has a fit score, the reasons behind it, and the company's real logo. Swipe right to save, left to pass.",
+    "panel": "#e4eefc",
+    "layout": "browser",
+    "images": ["jobs.png"]
+  },
+  {
+    "eyebrow": "Why it's called ChainMatch",
+    "lines": ["The chain,", "explained."],
+    "body": "Skills, seniority, location, still open: each link between you and the job lights up, so you know why it's worth applying.",
+    "panel": "#0b0d12",
+    "dark": true,
+    "layout": "card",
+    "images": ["chain.png"]
+  },
+  {
+    "eyebrow": "Verified openings",
+    "lines": ["Only jobs that", "are still open."],
+    "body": "Postings are checked against Greenhouse, Lever, Ashby, Workable and SmartRecruiters. Closed roles drop out.",
+    "panel": "#fbf5d9",
+    "layout": "browser",
+    "images": ["saved.png"]
+  },
+  {
+    "eyebrow": "Apply faster",
+    "lines": ["A cover note", "for every match."],
+    "body": "Drafted from your real experience in seconds, plus résumé fixes aimed at the jobs you want.",
+    "panel": "#fde9df",
+    "layout": "pair",
+    "images": ["cover-note.png", "fixes.png"]
+  },
+  {
+    "eyebrow": "Free to start",
+    "lines": ["Start free.", "Go Pro when it works."],
+    "body": "Top 3 matches of every search free. Pro unlocks everything plus a weekly email with new jobs and cover notes.",
+    "panel": "#efeafa",
+    "layout": "card",
+    "images": ["pricing.png"]
+  }
+]

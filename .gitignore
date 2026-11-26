@@ -31,3 +31,7 @@ apps/web/.open-next/
 apps/web/.wrangler/
 apps/web/.dev.vars
 apps/web/cloudflare-env.d.ts
+
+# marketing renders
+marketing/producthunt/out/
+marketing/producthunt/node_modules/

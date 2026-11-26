@@ -1,0 +1,13 @@
+{
+  "name": "chainmatch-producthunt-media",
+  "private": true,
+  "type": "module",
+  "description": "Renders ChainMatch's Product Hunt logo, gallery and demo video from the local app",
+  "scripts": {
+    "render": "node render.mjs",
+    "record": "node record.mjs"
+  },
+  "dependencies": {
+    "puppeteer-core": "^25.19.0"
+  }
+}
