@@ -1,4 +1,4 @@
-import { BadgeCheck, CalendarClock, ExternalLink, Globe, MapPin, Sparkles, Wallet } from "lucide-react";
+import { BadgeCheck, ExternalLink, Globe, MapPin, Sparkles, Wallet } from "lucide-react";
 import { AvatarMark, TONE_WASH, toneFor } from "@/components/profile/avatar-mark";
 import { MatchRing } from "@/components/profile/match-ring";
 import { remoteLabel } from "@/lib/fields";
@@ -35,9 +35,8 @@ export function JobCard({ job, className }: { job: JobPosting; className?: strin
       <div className="flex min-h-0 flex-1 flex-col gap-3.5 overflow-hidden px-6 pb-5">
         <p className="line-clamp-3 text-sm leading-relaxed text-foreground/75">{job.summary}</p>
 
-        <dl className="grid grid-cols-3 gap-2">
+        <dl className="grid grid-cols-2 gap-2">
           <Stat icon={Wallet} label="Pay" value={job.salary || "—"} />
-          <Stat icon={CalendarClock} label="Posted" value={job.posted || "—"} />
           <Stat icon={Globe} label="Source" value={job.source || hostOf(job.url)} />
         </dl>
 

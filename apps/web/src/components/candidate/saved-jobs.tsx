@@ -69,7 +69,6 @@ export function SavedJobs({ jobs: initial }: { jobs: JobPosting[] }) {
                 <p className="mt-2 text-sm text-foreground/75">{j.reasons[0]}</p>
                 <p className="mt-1 text-xs text-muted-foreground">
                   {j.source || hostOf(j.url)}
-                  {j.posted ? ` · ${j.posted}` : ""}
                 </p>
               </div>
               <MatchRing score={j.score} size={44} />
