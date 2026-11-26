@@ -64,7 +64,7 @@ function Hero() {
             Upload your résumé. <span className="text-brand">Swipe on jobs that fit.</span>
           </h1>
           <p className="mt-6 max-w-lg text-lg text-foreground/65">
-            Paste your LinkedIn link or upload a résumé. We find open roles on the web and on companies&apos; own job boards, and rank
+            Paste your LinkedIn URL or upload a résumé. We find open roles on the web and on companies&apos; own job boards, and rank
             them for you.
           </p>
           <div className="mt-9 flex flex-col gap-3 sm:flex-row">
@@ -75,7 +75,7 @@ function Hero() {
             </Button>
           </div>
           <ul className="mt-7 flex flex-wrap gap-x-5 gap-y-2 text-sm font-medium text-foreground/70">
-            {["LinkedIn link, PDF or Word", "Live postings from company job boards", "Free to try"].map((t) => (
+            {["LinkedIn URL, PDF or Word", "Live postings from company job boards", "Free to try"].map((t) => (
               <li key={t} className="flex items-center gap-1.5">
                 <Check className="size-4 text-brand" strokeWidth={2.5} /> {t}
               </li>
@@ -123,7 +123,7 @@ function AnyField() {
 
 function HowItWorks() {
   const steps = [
-    { icon: FileUp, t: "Add your profile", b: "Paste your LinkedIn link, or upload a résumé or LinkedIn PDF. We build a profile you can edit." },
+    { icon: FileUp, t: "Add your profile", b: "Paste your LinkedIn URL, or upload a résumé or LinkedIn PDF. We build a profile you can edit." },
     { icon: Search, t: "We find live openings", b: "Web search plus companies' own job boards (Greenhouse, Lever, Ashby and more), so closed postings are filtered out." },
     { icon: Layers, t: "Swipe and apply", b: "Every card says why it fits. Save the good ones, draft a cover note, apply on the company's site." },
   ];

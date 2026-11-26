@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     template: "%s · ChainMatch",
   },
   description:
-    "Upload a résumé or LinkedIn export and get live job postings ranked for you. Recruiters find candidates who fit. Any field.",
+    "Add your LinkedIn URL or upload a résumé and get live job postings ranked for you. Any field.",
 };
 
 export const viewport: Viewport = {

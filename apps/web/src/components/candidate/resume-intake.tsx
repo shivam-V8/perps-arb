@@ -1,6 +1,6 @@
 "use client";
 
-import { Archive, CheckCircle2, ExternalLink, FileText, Globe, Link2, Loader2, Sparkles, Upload } from "lucide-react";
+import { CheckCircle2, ExternalLink, FileText, Globe, Link2, Loader2, Sparkles, Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import type { CandidateDraft } from "@/lib/ai/schemas";
@@ -12,14 +12,11 @@ import type { CandidateProfile } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { CandidateForm, EMPTY_CANDIDATE } from "./candidate-form";
 
-type Mode = "export" | "linkedin" | "file" | "paste";
+type Mode = "linkedin" | "file" | "paste";
 type Source = { url: string; title: string };
 type Provenance =
   | { kind: "resume" }
-  | { kind: "linkedin"; sources: Source[]; missing: string[]; via: "provider" | "search" }
-  | { kind: "export"; found: { positions: number; education: number; skills: number; certifications: number }; missingFiles: string[] };
-
-const LINKEDIN_EXPORT_URL = "https://www.linkedin.com/mypreferences/d/download-my-data";
+  | { kind: "linkedin"; sources: Source[]; missing: string[]; via: "provider" | "search" };
 
 const host = (u: string) => {
   try {
@@ -29,13 +26,11 @@ const host = (u: string) => {
   }
 };
 
-/** Step 1: LinkedIn link, résumé file, or pasted text. Step 2: review the draft before saving. */
+/** Step 1: LinkedIn URL, résumé file, or pasted text. Step 2: review the draft before saving. */
 export function ResumeIntake() {
   const router = useRouter();
-  const [mode, setMode] = useState<Mode>("export");
+  const [mode, setMode] = useState<Mode>("linkedin");
   const [file, setFile] = useState<File | null>(null);
-  const [zip, setZip] = useState<File | null>(null);
-  const zipRef = useRef<HTMLInputElement>(null);
   const [text, setText] = useState("");
   const [liUrl, setLiUrl] = useState("");
   const [ownProfile, setOwnProfile] = useState(false);
@@ -63,20 +58,6 @@ export function ResumeIntake() {
     if (!res?.ok) return setError(json.error ?? "Something went wrong.");
     setProvenance({ kind: "resume" });
     setProfile({ ...EMPTY_CANDIDATE, ...(json.draft as CandidateDraft), visible_to_recruiters: false });
-  }
-
-  async function importExport() {
-    if (!zip) return;
-    setBusy(true);
-    setError(null);
-    const fd = new FormData();
-    fd.append("file", zip);
-    const res = await fetch("/api/resume/linkedin-export", { method: "POST", body: fd }).catch(() => null);
-    const json = res ? await res.json().catch(() => ({})) : {};
-    setBusy(false);
-    if (!res?.ok) return setError(json.error ?? "Something went wrong.");
-    setProvenance({ kind: "export", found: json.found, missingFiles: json.missingFiles ?? [] });
-    setProfile({ ...EMPTY_CANDIDATE, ...(json.draft as CandidateDraft & { email: string }), visible_to_recruiters: false });
   }
 
   /** The user copied their own profile page (select all → copy) and pasted it. */
@@ -122,21 +103,7 @@ export function ResumeIntake() {
   if (profile) {
     return (
       <div>
-        {provenance?.kind === "export" ? (
-          <div className="mb-6 rounded-2xl bg-brand-wash px-4 py-3 text-sm text-brand">
-            <p className="flex items-center gap-2 font-medium">
-              <CheckCircle2 className="size-4 shrink-0" />
-              Imported from your LinkedIn data export: {provenance.found.positions} roles, {provenance.found.education} schools,{" "}
-              {provenance.found.skills} skills{provenance.found.certifications ? `, ${provenance.found.certifications} certifications` : ""}.
-            </p>
-            <p className="mt-1 text-xs text-foreground/70">
-              {provenance.missingFiles.length
-                ? `Not in your export: ${provenance.missingFiles.join(", ")}. Add those details below if you like. `
-                : ""}
-              Pick your field and check everything before saving.
-            </p>
-          </div>
-        ) : provenance?.kind === "linkedin" && provenance.via === "provider" ? null : provenance?.kind === "linkedin" ? (
+        {provenance?.kind === "linkedin" && provenance.via === "provider" ? null : provenance?.kind === "linkedin" ? (
           <div className="mb-6 rounded-2xl bg-brand-wash px-4 py-3 text-sm text-brand">
             <p className="flex items-center gap-2 font-medium">
               <Globe className="size-4 shrink-0" />
@@ -188,8 +155,7 @@ export function ResumeIntake() {
       <div className="flex w-fit flex-wrap gap-1 rounded-full bg-white p-1 shadow-soft ring-1 ring-black/5">
         {(
           [
-            { m: "export", label: "LinkedIn export", icon: Archive },
-            { m: "linkedin", label: "LinkedIn link", icon: Link2 },
+            { m: "linkedin", label: "LinkedIn URL", icon: Link2 },
             { m: "file", label: "Upload résumé", icon: Upload },
             { m: "paste", label: "Paste text", icon: FileText },
           ] as const
@@ -211,46 +177,6 @@ export function ResumeIntake() {
           </button>
         ))}
       </div>
-
-      {mode === "export" && (
-        <div className="mt-5">
-          <div className="rounded-2xl bg-surface-2 p-4 text-sm text-foreground/80 ring-1 ring-black/5">
-            <p className="font-medium text-foreground">Get your full profile from LinkedIn (recommended, works for every profile)</p>
-            <ol className="mt-2 list-decimal space-y-1 pl-5">
-              <li>
-                Open LinkedIn&apos;s{" "}
-                <a href={LINKEDIN_EXPORT_URL} target="_blank" rel="noopener noreferrer" className="font-medium text-brand underline underline-offset-2">
-                  Download your data
-                </a>{" "}
-                page (Settings → Data privacy → Get a copy of your data).
-              </li>
-              <li>
-                Choose <span className="font-medium">“Want something in particular?”</span> and tick <span className="font-medium">Profile, Positions, Education, Skills</span>. Click <span className="font-medium">Request archive</span>.
-              </li>
-              <li>LinkedIn emails you a download link, usually within minutes. Upload that .zip here.</li>
-            </ol>
-            <p className="mt-2 text-xs text-muted-foreground">
-              We only read your profile, jobs, education and skills from it. Messages, connections and everything else are never opened, and the file isn&apos;t stored.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => zipRef.current?.click()}
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={(e) => {
-              e.preventDefault();
-              const f = e.dataTransfer.files[0];
-              if (f) setZip(f);
-            }}
-            className="mt-4 flex w-full flex-col items-center justify-center rounded-3xl border-2 border-dashed border-black/15 bg-white px-6 py-8 text-center transition-colors hover:border-brand/50"
-          >
-            <Archive className="size-6 text-brand" />
-            <span className="mt-3 font-medium">{zip ? zip.name : "Drop your LinkedIn export .zip here"}</span>
-            <span className="mt-1 text-sm text-muted-foreground">{zip ? "Click to choose a different file" : "The file is named like Basic_LinkedInDataExport_….zip"}</span>
-            <input ref={zipRef} type="file" accept=".zip,application/zip" className="hidden" onChange={(e) => setZip(e.target.files?.[0] ?? null)} />
-          </button>
-        </div>
-      )}
 
       {mode === "linkedin" && (
         <div className="mt-5">
@@ -285,8 +211,7 @@ export function ResumeIntake() {
             <span>This is my own profile</span>
           </label>
           <p className="mt-2 px-1 text-xs text-muted-foreground">
-            We look up what&apos;s publicly available about this profile on the web (search results, personal sites, team pages).
-            We search public web sources for this profile. It only works if search engines have a copy of it; if not, we&apos;ll show you a quick copy-and-paste option.
+            We read the public version of this profile. If we can&apos;t, we&apos;ll show you a quick copy-and-paste option.
           </p>
           {notFound && (
             <div className="mt-4 rounded-2xl bg-surface-2 p-4 text-sm ring-1 ring-black/5">
@@ -296,7 +221,7 @@ export function ResumeIntake() {
                     You&apos;ve used this hour&apos;s automatic LinkedIn lookups. Next one in {limitMins} min.
                   </p>
                   <p className="mt-1 text-muted-foreground">
-                    No need to wait: paste your profile below or use your LinkedIn export. Those don&apos;t count toward the limit.
+                    No need to wait: paste your profile below or upload your résumé. Those don&apos;t count toward the limit.
                   </p>
                 </>
               ) : (
@@ -333,8 +258,8 @@ export function ResumeIntake() {
                 <Button size="sm" className="rounded-full" disabled={busy || liPaste.trim().length < 80} onClick={parsePastedProfile}>
                   {busy ? <Loader2 className="animate-spin" /> : <Sparkles />} Read my pasted profile
                 </Button>
-                <Button size="sm" variant="outline" className="rounded-full" onClick={() => setMode("export")}>
-                  <Archive /> Use LinkedIn export instead
+                <Button size="sm" variant="outline" className="rounded-full" onClick={() => setMode("file")}>
+                  <Upload /> Upload a résumé instead
                 </Button>
                 {limitMins === null && !(liName && liHint) && (
                   <Button size="sm" variant="ghost" className="rounded-full" disabled={busy || !liName || !liHint} onClick={importLinkedIn}>
@@ -379,12 +304,7 @@ export function ResumeIntake() {
       {error && <p className="mt-3 text-sm text-rose">{error}</p>}
 
       <div className="mt-6 flex flex-wrap items-center gap-4">
-        {mode === "export" ? (
-          <Button onClick={importExport} disabled={!zip || busy} size="lg" className="h-12 rounded-full px-7">
-            {busy ? <Loader2 className="animate-spin" /> : <Archive />}
-            {busy ? "Importing…" : "Import my LinkedIn data"}
-          </Button>
-        ) : mode === "linkedin" ? (
+        {mode === "linkedin" ? (
           <Button onClick={importLinkedIn} disabled={!liValid || !ownProfile || busy} size="lg" className="h-12 rounded-full px-7">
             {busy ? <Loader2 className="animate-spin" /> : <Sparkles />}
             {busy ? "Looking it up…" : "Import my profile"}
@@ -409,10 +329,8 @@ export function ResumeIntake() {
       {busy && (
         <p className="mt-3 text-sm text-muted-foreground">
           {mode === "linkedin"
-            ? "Searching public sources. This takes about 20–60 seconds."
-            : mode === "export"
-              ? "Reading your export…"
-              : "Reading it. This takes about 10–20 seconds."}
+            ? "Reading your profile. This takes about 20–60 seconds."
+            : "Reading it. This takes about 10–20 seconds."}
         </p>
       )}
     </div>

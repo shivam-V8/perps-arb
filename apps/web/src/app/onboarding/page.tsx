@@ -28,7 +28,7 @@ export default async function OnboardingPage({ searchParams }: { searchParams: P
       <div className="mx-auto max-w-3xl px-4 pt-8 pb-24">
         <h1 className="font-display text-4xl font-semibold tracking-tight sm:text-5xl">Add your profile</h1>
         <p className="mt-2 max-w-xl text-muted-foreground">
-          Paste your LinkedIn link, or upload a résumé or LinkedIn PDF. We turn it into a profile you can edit, then find open
+          Paste your LinkedIn URL, or upload a résumé or LinkedIn PDF. We turn it into a profile you can edit, then find open
           jobs on the web and on companies&apos; own job boards. No account needed.
         </p>
         <div className="mt-8">
