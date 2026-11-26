@@ -11,5 +11,6 @@ const nextConfig: NextConfig = {
 
 export default nextConfig;
 
-// Makes Cloudflare bindings (getCloudflareContext) available during `next dev`.
-initOpenNextCloudflareForDev();
+// Makes Cloudflare bindings (getCloudflareContext) available during `next dev` only;
+// production runs as a plain Node server (AWS) and must not start the local emulator.
+if (process.env.NODE_ENV === "development") initOpenNextCloudflareForDev();
