@@ -14,7 +14,7 @@ Résumé-to-job matching for any field — [chainmatch.ai](https://chainmatch.ai
 ```bash
 docker compose up -d db                      # local Postgres on :5433
 cd apps/web
-cp .env.example .env.local                   # fill ANTHROPIC_API_KEY; set SESSION_SECRET
+cp .env.example .env.development.local     # fill ANTHROPIC_API_KEY; set SESSION_SECRET (dev-only file: never baked into builds)
 pnpm install
 pnpm db:migrate                              # apply drizzle/ migrations
 pnpm db:seed                                 # optional: 8 fake visible candidates (dev only)

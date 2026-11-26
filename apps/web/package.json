@@ -8,12 +8,12 @@
     "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:seed": "tsx --env-file=.env.local scripts/seed.ts",
+    "db:seed": "tsx --env-file=.env.development.local scripts/seed.ts",
     "test": "vitest run",
     "smoke:ats": "tsx scripts/smoke-ats.ts",
-    "cf:build": "opennextjs-cloudflare build",
-    "cf:preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-    "cf:deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy"
+    "cf:build": "node scripts/cf.mjs build",
+    "cf:preview": "node scripts/cf.mjs preview",
+    "cf:deploy": "node scripts/cf.mjs deploy"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.14.0",
