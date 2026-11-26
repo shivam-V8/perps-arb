@@ -19,7 +19,7 @@ export default async function RolesPage() {
     <div className="mx-auto w-full max-w-3xl pt-6 md:pt-10">
       <div className="flex items-end justify-between">
         <div>
-          <h1 className="font-display text-4xl font-semibold tracking-tight">Your roles</h1>
+          <h1 className="poster text-5xl sm:text-6xl">Your roles</h1>
           <p className="mt-1 text-sm text-muted-foreground">Open a role to swipe on candidates who fit it.</p>
         </div>
         <Button asChild className="rounded-full">

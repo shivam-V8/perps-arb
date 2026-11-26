@@ -31,7 +31,7 @@ export function DesktopNav({ role, badges }: { role: Role; badges: Record<string
             href={href}
             className={cn(
               "flex items-center gap-2 rounded-full px-3 py-1.5 text-sm transition-colors",
-              active ? "bg-black/[0.06] text-foreground" : "text-muted-foreground hover:text-foreground",
+              active ? "bg-white/15 text-white" : "text-white/60 hover:text-white",
             )}
           >
             <Icon className="size-4" />

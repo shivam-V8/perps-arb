@@ -7,7 +7,7 @@ export default async function UnsubscribedPage({ searchParams }: { searchParams:
   const { error } = await searchParams;
   return (
     <PublicPage width="max-w-md">
-      <h1 className="font-display text-4xl font-semibold tracking-tight">{error ? "That link didn't work" : "You're unsubscribed"}</h1>
+      <h1 className="poster text-5xl sm:text-6xl">{error ? "That link didn't work" : "You're unsubscribed"}</h1>
       <p className="mt-2 text-muted-foreground">
         {error ? "Turn the weekly email off from your profile instead." : "You won't get the weekly job email any more. Your Pro plan isn't affected."}{" "}
         You can switch it back on any time in{" "}

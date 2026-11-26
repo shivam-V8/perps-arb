@@ -7,7 +7,7 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
   const { error } = await searchParams;
   return (
     <PublicPage width="max-w-md">
-      <h1 className="font-display text-4xl font-semibold tracking-tight">Sign in</h1>
+      <h1 className="poster text-5xl sm:text-6xl">Sign in</h1>
       <p className="mt-2 text-muted-foreground">
         We&apos;ll email you a one-time link. No password. New here? Adding your email keeps your profile and matches on every device.
       </p>

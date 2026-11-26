@@ -15,7 +15,7 @@ export default async function InvitesPage() {
 
   return (
     <div className="mx-auto w-full max-w-3xl pt-6 md:pt-10">
-      <h1 className="font-display text-4xl font-semibold tracking-tight">Invites</h1>
+      <h1 className="poster text-5xl sm:text-6xl">Invites</h1>
       <p className="mt-1 text-sm text-muted-foreground">
         Recruiters who swiped right on your profile. Accepting shares your name, email and résumé with them and opens a chat.
       </p>

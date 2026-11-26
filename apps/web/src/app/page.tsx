@@ -1,159 +1,281 @@
-import {
-  ArrowRight,
-  BarChart3,
-  Check,
-  Code2,
-  EyeOff,
-  FileUp,
-  GraduationCap,
-  HeartPulse,
-  Layers,
-  Lock,
-  Megaphone,
-  Palette,
-  Scale,
-  Search,
-  Settings2,
-  Sparkles,
-  TrendingUp,
-  Wallet,
-} from "lucide-react";
-import Link from "next/link";
-import { Logo } from "@/components/brand/logo";
-import { ResumeFlow } from "@/components/landing/resume-flow";
+import { Check, EyeOff, FileUp, Lock, X } from "lucide-react";
+import { ChainSection } from "@/components/landing/chain-visual";
+import { Faq } from "@/components/landing/faq";
+import { Hero } from "@/components/landing/hero";
+import { CoverNoteMock, DigestMock, FixMock, ImportMock, MatchMock, VerifyMock } from "@/components/landing/mocks";
+import { BlurWords, Marquee, Reveal } from "@/components/motion";
+import { CompanyLogo } from "@/components/profile/company-logo";
+import { ArrowButton, PillNav } from "@/components/site/pill-nav";
 import { PricingTable } from "@/components/site/pricing-table";
 import { SiteFooter } from "@/components/site/site-chrome";
-import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
+/** chainmatch.ai: the career chain-matching engine. */
 export default function Landing() {
   return (
-    <div className="min-h-dvh overflow-x-hidden bg-background">
+    <div className="min-h-dvh overflow-x-clip bg-background">
+      <PillNav />
       <Hero />
-      <AnyField />
-      <HowItWorks />
-      <Compare />
+      <Companies />
+      <Features />
+      <ChainSection />
+      <Digest />
+      <OldWay />
       <Privacy />
       <Pricing />
-      <FinalCta />
+      <FaqSection />
+      <ClosingCta />
       <SiteFooter />
     </div>
   );
 }
 
-function Hero() {
-  return (
-    <section className="bg-hero-paper relative">
-      <header className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-        <Logo />
-        <nav className="flex items-center gap-1 text-sm">
-          <a href="#how" className="hidden rounded-full px-3 py-1.5 text-foreground/70 hover:text-foreground md:block">
-            How it works
-          </a>
-          <a href="#privacy" className="hidden rounded-full px-3 py-1.5 text-foreground/70 hover:text-foreground md:block">
-            Privacy
-          </a>
-          <a href="#pricing" className="hidden rounded-full px-3 py-1.5 text-foreground/70 hover:text-foreground md:block">
-            Pricing
-          </a>
-          <Link href="/signin" className="hidden rounded-full px-3 py-1.5 text-foreground/70 hover:text-foreground sm:block">
-            Sign in
-          </Link>
-          <Button asChild size="sm" variant="ghost" className="rounded-full">
-            <Link href="/onboarding">Open app</Link>
-          </Button>
-        </nav>
-      </header>
-
-      <div className="mx-auto grid max-w-6xl items-center gap-14 px-4 pt-10 pb-20 md:pt-16 lg:grid-cols-[1.05fr_1fr] lg:pb-28">
-        <div>
-          <p className="inline-flex items-center gap-2 rounded-full border border-brand-line bg-white px-3 py-1 text-xs font-semibold text-brand">
-            <Sparkles className="size-3.5" /> Any field · live job postings · AI-ranked
-          </p>
-          <h1 className="mt-6 font-display text-[2.9rem] leading-[1] font-bold tracking-[-0.035em] text-balance sm:text-6xl lg:text-[4.3rem]">
-            Upload your résumé. <span className="text-brand">Swipe on jobs that fit.</span>
-          </h1>
-          <p className="mt-6 max-w-lg text-lg text-foreground/65">
-            Paste your LinkedIn URL or upload a résumé. We find open roles on the web and on companies&apos; own job boards, and rank
-            them for you.
-          </p>
-          <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-            <Button asChild size="lg" className="h-13 rounded-full px-7 text-[0.95rem]">
-              <Link href="/onboarding">
-                <FileUp /> I&apos;m looking for a job
-              </Link>
-            </Button>
-          </div>
-          <ul className="mt-7 flex flex-wrap gap-x-5 gap-y-2 text-sm font-medium text-foreground/70">
-            {["LinkedIn URL, PDF or Word", "Live postings from company job boards", "Free to try"].map((t) => (
-              <li key={t} className="flex items-center gap-1.5">
-                <Check className="size-4 text-brand" strokeWidth={2.5} /> {t}
-              </li>
-            ))}
-          </ul>
-        </div>
-        <ResumeFlow />
-      </div>
-    </section>
-  );
+/** Small uppercase section label. */
+function Eyebrow({ children, className }: { children: React.ReactNode; className?: string }) {
+  return <p className={cn("text-xs font-bold tracking-[0.16em] text-foreground/60 uppercase", className)}>{children}</p>;
 }
 
-const FIELD_TILES = [
-  { icon: HeartPulse, label: "Healthcare" },
-  { icon: Code2, label: "Engineering" },
-  { icon: BarChart3, label: "Data" },
-  { icon: TrendingUp, label: "Sales" },
-  { icon: Megaphone, label: "Marketing" },
-  { icon: Palette, label: "Design" },
-  { icon: Wallet, label: "Finance" },
-  { icon: Settings2, label: "Operations" },
-  { icon: GraduationCap, label: "Education" },
-  { icon: Scale, label: "Legal" },
+const COMPANIES = [
+  ["stripe.com", "Stripe"],
+  ["openai.com", "OpenAI"],
+  ["notion.so", "Notion"],
+  ["figma.com", "Figma"],
+  ["shopify.com", "Shopify"],
+  ["airbnb.com", "Airbnb"],
+  ["spotify.com", "Spotify"],
+  ["kraken.com", "Kraken"],
+  ["hubspot.com", "HubSpot"],
+  ["canva.com", "Canva"],
+  ["revolut.com", "Revolut"],
+  ["datadoghq.com", "Datadog"],
 ];
 
-function AnyField() {
+function Companies() {
   return (
-    <section className="border-y border-black/[0.06] bg-white px-4 py-14">
+    <section className="mx-auto flex max-w-6xl flex-col items-start gap-6 px-5 py-12 md:flex-row md:items-center">
+      <p className="shrink-0 text-xs font-bold tracking-[0.14em] text-foreground/60 uppercase md:w-52">Live openings from company job boards like</p>
+      <Marquee className="w-full" gap={44} seconds={45}>
+        {COMPANIES.map(([d, name]) => (
+          <span key={d} className="flex items-center gap-2 text-sm font-semibold text-foreground/70 grayscale transition hover:grayscale-0">
+            <CompanyLogo name={name} domain={d} size="sm" />
+            {name}
+          </span>
+        ))}
+      </Marquee>
+    </section>
+  );
+}
+
+const FEATURES = [
+  {
+    n: "01",
+    tag: "Import",
+    lines: ["One link,", "your whole profile."],
+    body: "Paste your LinkedIn URL or drop in a résumé. We build an editable profile in seconds: roles, skills, education.",
+    points: ["LinkedIn URL, PDF, Word or pasted text", "Every field editable before you save", "Your file stays private"],
+    panel: "bg-panel-sky",
+    Mock: ImportMock,
+  },
+  {
+    n: "02",
+    tag: "Match",
+    lines: ["Every job,", "ranked by its chain."],
+    body: "We search the web and companies' own boards, then rank each opening by how strongly it links to you.",
+    points: ["A fit score on every job", "The reasons behind each score", "Any field, any country"],
+    panel: "bg-panel-mint",
+    Mock: MatchMock,
+  },
+  {
+    n: "03",
+    tag: "Verify",
+    lines: ["Only jobs that", "are still open."],
+    body: "Every posting is checked against the company's live job board, so you never apply to a role that closed last month.",
+    points: ["Greenhouse, Lever, Ashby, Workable, SmartRecruiters", "Closed postings removed", "Duplicates merged"],
+    panel: "bg-panel-lemon",
+    Mock: VerifyMock,
+  },
+  {
+    n: "04",
+    tag: "Apply",
+    lines: ["A cover note", "for every match."],
+    body: "One click drafts a short, specific note from your real experience. Edit it, copy it, apply on the company's site.",
+    points: ["Written from your profile, never invented", "120-180 words, no clichés", "Ready in seconds"],
+    panel: "bg-panel-peach",
+    Mock: CoverNoteMock,
+  },
+  {
+    n: "05",
+    tag: "Improve",
+    lines: ["Résumé fixes", "that get replies."],
+    body: "Concrete rewrites aimed at the jobs you're matching, with a line you can paste straight in.",
+    points: ["Tailored to your top matches", "Placeholders where you need real numbers", "Updates when your profile changes"],
+    panel: "bg-panel-lilac",
+    Mock: FixMock,
+  },
+];
+
+function Features() {
+  return (
+    <section id="how" className="scroll-mt-24 px-5 pt-16 pb-12 md:pt-24">
       <div className="mx-auto max-w-6xl">
-        <p className="text-center text-sm font-medium text-muted-foreground">
-          Nurses, analysts, teachers, engineers, sales leads: it works for any profession
-        </p>
-        <ul className="mt-7 grid grid-cols-2 gap-2 sm:grid-cols-5">
-          {FIELD_TILES.map((f) => (
-            <li key={f.label} className="flex items-center gap-2.5 rounded-2xl bg-surface-2 px-4 py-3 ring-1 ring-black/[0.04]">
-              <f.icon className="size-4 text-brand" />
-              <span className="text-sm font-medium">{f.label}</span>
-            </li>
+        <div className="text-center">
+          <Eyebrow>How it works</Eyebrow>
+          <BlurWords lines={["Everything between you", "and the offer."]} accent={[1]} className="mt-4 text-[clamp(2.6rem,6.5vw,5.4rem)] text-ink" />
+          <Reveal>
+            <p className="mx-auto mt-5 max-w-lg text-lg text-foreground/65">From your résumé to a sent application, every step lives in one place.</p>
+          </Reveal>
+        </div>
+
+        <div className="mt-20 space-y-24 md:mt-28 md:space-y-32">
+          {FEATURES.map((f, i) => (
+            <div key={f.n} className="grid items-center gap-10 md:grid-cols-2 md:gap-16">
+              <div className={cn(i % 2 === 1 && "md:order-2")}>
+                <Reveal>
+                  <p className="flex items-center gap-2 text-xs font-bold tracking-[0.14em] uppercase">
+                    <span className="rounded-full bg-ink px-2 py-0.5 text-white tabular">{f.n}</span>
+                    {f.tag}
+                  </p>
+                </Reveal>
+                <BlurWords lines={f.lines} className="mt-4 text-[clamp(2.4rem,5vw,3.9rem)] text-ink" as="h3" />
+                <Reveal delay={0.1}>
+                  <p className="mt-5 max-w-md text-lg text-foreground/65">{f.body}</p>
+                  <ul className="mt-6 space-y-2.5">
+                    {f.points.map((p) => (
+                      <li key={p} className="flex items-center gap-2.5 text-[0.95rem]">
+                        <span className="grid size-5 place-items-center rounded-full bg-brand text-white">
+                          <Check className="size-3" strokeWidth={3.5} />
+                        </span>
+                        {p}
+                      </li>
+                    ))}
+                  </ul>
+                </Reveal>
+              </div>
+              <Reveal className={cn(i % 2 === 1 && "md:order-1")} y={40}>
+                <div className={cn("relative flex min-h-[420px] items-center justify-center overflow-hidden rounded-[32px] p-6 sm:p-10", f.panel)}>
+                  <div className="pointer-events-none absolute -right-16 -bottom-24 size-72 rounded-full border-[28px] border-white/40" aria-hidden />
+                  <f.Mock />
+                </div>
+              </Reveal>
+            </div>
           ))}
-        </ul>
+        </div>
       </div>
     </section>
   );
 }
 
-function HowItWorks() {
-  const steps = [
-    { icon: FileUp, t: "Add your profile", b: "Paste your LinkedIn URL, or upload a résumé or LinkedIn PDF. We build a profile you can edit." },
-    { icon: Search, t: "We find live openings", b: "Web search plus companies' own job boards (Greenhouse, Lever, Ashby and more), so closed postings are filtered out." },
-    { icon: Layers, t: "Swipe and apply", b: "Every card says why it fits. Save the good ones, draft a cover note, apply on the company's site." },
-  ];
+function Digest() {
   return (
-    <section id="how" className="scroll-mt-10 px-4 py-24 md:py-32">
+    <section className="px-5 py-20 md:py-28">
+      <div className="mx-auto grid max-w-6xl items-center gap-12 md:grid-cols-2">
+        <div>
+          <Eyebrow>ChainMatch Pro</Eyebrow>
+          <BlurWords lines={["New links,", "every Monday."]} accent={[1]} className="mt-4 text-[clamp(2.6rem,6vw,4.8rem)] text-ink" />
+          <Reveal delay={0.1}>
+            <p className="mt-5 max-w-md text-lg text-foreground/65">
+              Pro members get a weekly email with fresh matches, a cover note for each, the apply link and a few résumé fixes. Just open it and
+              apply.
+            </p>
+            <div className="mt-8">
+              <ArrowButton href="#pricing" tone="ink">
+                See Pro
+              </ArrowButton>
+            </div>
+          </Reveal>
+        </div>
+        <Reveal y={40}>
+          <div className="flex min-h-[420px] items-center justify-center rounded-[32px] bg-panel-sky p-6 sm:p-10">
+            <DigestMock />
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+const OLD_NEW = [
+  ["Search a dozen job boards by keyword", "One search across company boards, from your résumé"],
+  ["Guess which postings you're qualified for", "Every job shows the chain: why it fits, and where it doesn't"],
+  ["Apply to roles that closed weeks ago", "Postings confirmed open on the company's own board"],
+  ["Rewrite a cover letter every time", "A draft cover note from your real experience"],
+  ["Wonder why nobody replies", "Résumé fixes aimed at the jobs you want"],
+];
+
+function OldWay() {
+  return (
+    <section className="px-5 py-20 md:py-28">
+      <div className="mx-auto max-w-4xl">
+        <div className="text-center">
+          <Eyebrow>Why ChainMatch</Eyebrow>
+          <BlurWords lines={["The old way", "vs the chain way."]} accent={[1]} className="mt-4 text-[clamp(2.6rem,6.5vw,5rem)] text-ink" />
+        </div>
+        <div className="relative mt-14 grid gap-3 md:grid-cols-2">
+          <span className="poster absolute top-3 left-1/2 z-10 hidden size-14 -translate-x-1/2 place-items-center rounded-full bg-panel-lemon text-xl text-ink ring-4 ring-background md:grid">vs</span>
+          <div className="space-y-3">
+            <p className="poster rounded-2xl bg-white px-5 py-4 text-2xl text-foreground/40 ring-1 ring-black/[0.06] md:pr-10">The old way</p>
+            {OLD_NEW.map(([a], i) => (
+              <Reveal key={a} delay={i * 0.06}>
+                <p className="flex items-center gap-3 rounded-2xl bg-black/[0.035] px-5 py-4 text-[0.95rem] text-foreground/55">
+                  <span className="grid size-6 shrink-0 place-items-center rounded-full bg-white ring-1 ring-black/10">
+                    <X className="size-3.5" />
+                  </span>
+                  {a}
+                </p>
+              </Reveal>
+            ))}
+          </div>
+          <div className="space-y-3">
+            <p className="poster rounded-2xl bg-ink px-5 py-4 text-2xl text-brand-soft md:pl-11">With ChainMatch</p>
+            {OLD_NEW.map(([, b], i) => (
+              <Reveal key={b} delay={i * 0.06 + 0.1}>
+                <p className="flex items-center gap-3 rounded-2xl bg-brand px-5 py-4 text-[0.95rem] font-medium text-white">
+                  <span className="grid size-6 shrink-0 place-items-center rounded-full bg-white text-brand">
+                    <Check className="size-3.5" strokeWidth={3} />
+                  </span>
+                  {b}
+                </p>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const PRIVACY = [
+  { icon: EyeOff, t: "Hidden by default", b: "Recruiters can't find you unless you turn it on.", panel: "bg-panel-mint" },
+  { icon: Lock, t: "Anonymous until you say yes", b: "They see skills and experience, never your name, email or résumé file, until you accept an invite.", panel: "bg-panel-peach" },
+  { icon: FileUp, t: "Your résumé stays private", b: "Stored privately and only used to build your profile and search for you.", panel: "bg-panel-sky" },
+];
+
+function Privacy() {
+  return (
+    <section id="privacy" className="scroll-mt-24 px-5 py-20">
       <div className="mx-auto max-w-6xl">
-        <h2 className="max-w-xl font-display text-4xl font-bold tracking-tight sm:text-5xl">How it works</h2>
-        <ol className="mt-14 grid gap-6 md:grid-cols-3">
-          {steps.map((s, i) => (
-            <li key={s.t} className="rounded-[32px] border border-black/[0.06] bg-white p-8 shadow-soft">
-              <span className="grid size-10 place-items-center rounded-xl bg-brand-wash">
-                <s.icon className="size-4.5 text-brand" />
-              </span>
-              <p className="mt-6 font-display text-lg font-semibold">
-                <span className="mr-2 opacity-40">{i + 1}</span>
-                {s.t}
-              </p>
-              <p className="mt-1 text-sm text-foreground/60">{s.b}</p>
-            </li>
+        <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
+          <div>
+            <Eyebrow>Privacy</Eyebrow>
+            <BlurWords lines={["You decide", "who sees you."]} accent={[1]} className="mt-4 text-[clamp(2.6rem,6vw,4.6rem)] text-ink" />
+          </div>
+          <Reveal>
+            <p className="max-w-sm text-foreground/65">Your profile is for finding jobs. Nobody browses it unless you choose to be found.</p>
+          </Reveal>
+        </div>
+        <div className="mt-12 grid gap-4 md:grid-cols-3">
+          {PRIVACY.map((p, i) => (
+            <Reveal key={p.t} delay={i * 0.08}>
+              <div className={cn("h-full rounded-[28px] p-7", p.panel)}>
+                <span className="grid size-11 place-items-center rounded-2xl bg-white shadow-soft">
+                  <p.icon className="size-5 text-ink" />
+                </span>
+                <p className="mt-6 font-display text-xl font-semibold">{p.t}</p>
+                <p className="mt-1.5 text-foreground/65">{p.b}</p>
+              </div>
+            </Reveal>
           ))}
-        </ol>
+        </div>
       </div>
     </section>
   );
@@ -161,91 +283,73 @@ function HowItWorks() {
 
 function Pricing() {
   return (
-    <section id="pricing" className="scroll-mt-10 bg-white px-4 py-24">
-      <div className="mx-auto max-w-6xl">
-        <h2 className="max-w-xl font-display text-4xl font-bold tracking-tight sm:text-5xl">Start free. Go Pro when it&apos;s working.</h2>
-        <p className="mt-3 max-w-xl text-lg text-foreground/65">Every search shows your top 3 matches free. Unlock the rest when you&apos;re ready.</p>
-        <div className="mt-12">
-          <PricingTable />
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function Compare() {
-  const rows = [
-    ["Search a dozen job boards by keyword", "One search across careers pages and boards, from your résumé"],
-    ["Guess which postings you're qualified for", "Each job says why it fits, and where it doesn't"],
-    ["Rewrite a cover letter every time", "A draft cover note from your real experience"],
-  ];
-  return (
-    <section className="bg-white px-4 py-24">
-      <div className="mx-auto max-w-4xl">
-        <h2 className="text-center font-display text-4xl font-bold tracking-tight sm:text-5xl">Less searching. More hearing back.</h2>
-        <div className="mt-12 overflow-hidden rounded-[28px] border border-black/[0.06]">
-          <div className="grid grid-cols-2 bg-surface-2 text-sm font-semibold">
-            <p className="px-5 py-3 text-muted-foreground">The usual way</p>
-            <p className="border-l border-black/[0.06] px-5 py-3 text-brand">With ChainMatch</p>
+    <section id="pricing" className="scroll-mt-24 px-3 py-6">
+      <div className="rounded-[36px] bg-panel-lilac/70 px-5 py-20 md:py-28">
+        <div className="mx-auto max-w-6xl">
+          <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
+            <div>
+              <Eyebrow>Pricing</Eyebrow>
+              <BlurWords lines={["Start free.", "Go Pro when it works."]} accent={[1]} className="mt-4 text-[clamp(2.6rem,6vw,4.6rem)] text-ink" />
+            </div>
+            <Reveal>
+              <p className="max-w-sm text-foreground/65">Every search shows your top 3 matches free. No card needed to start; cancel Pro anytime.</p>
+            </Reveal>
           </div>
-          {rows.map(([a, b]) => (
-            <div key={a} className="grid grid-cols-2 border-t border-black/[0.06] text-sm">
-              <p className="px-5 py-4 text-foreground/55 line-through decoration-black/20">{a}</p>
-              <p className="flex gap-2 border-l border-black/[0.06] px-5 py-4 font-medium">
-                <Check className="mt-0.5 size-4 shrink-0 text-brand" strokeWidth={2.5} />
-                {b}
-              </p>
-            </div>
-          ))}
+          <Reveal className="mt-12" y={30}>
+            <PricingTable />
+          </Reveal>
         </div>
       </div>
     </section>
   );
 }
 
-function Privacy() {
-  const items = [
-    { icon: EyeOff, t: "Hidden by default", b: "Recruiters can't find you unless you turn it on." },
-    { icon: Lock, t: "Anonymous until you say yes", b: "They see skills and experience, never your name, email or résumé file, until you accept an invite." },
-    { icon: FileUp, t: "Your résumé stays private", b: "Stored privately and only used to build your profile and search for you." },
-  ];
+function FaqSection() {
   return (
-    <section id="privacy" className="scroll-mt-10 px-4 py-24">
-      <div className="mx-auto max-w-6xl">
-        <h2 className="max-w-xl font-display text-4xl font-bold tracking-tight sm:text-5xl">You decide who sees you</h2>
-        <div className="mt-12 grid gap-4 md:grid-cols-3">
-          {items.map((i) => (
-            <div key={i.t} className="rounded-3xl border border-black/[0.06] bg-white p-6 shadow-soft">
-              <i.icon className="size-5 text-brand" />
-              <p className="mt-4 font-display text-lg font-semibold">{i.t}</p>
-              <p className="mt-1 text-sm text-foreground/60">{i.b}</p>
-            </div>
-          ))}
+    <section id="faq" className="scroll-mt-24 px-5 py-20 md:py-28">
+      <div className="mx-auto grid max-w-6xl gap-10 md:grid-cols-[0.9fr_1.1fr]">
+        <div>
+          <Eyebrow>FAQ</Eyebrow>
+          <BlurWords lines={["Questions,", "answered."]} accent={[1]} className="mt-4 text-[clamp(2.6rem,6vw,4.6rem)] text-ink" />
+          <Reveal>
+            <p className="mt-5 max-w-sm text-foreground/65">
+              Something else? Write to{" "}
+              <a href="mailto:hello@chainmatch.ai" className="font-medium text-foreground underline underline-offset-4">
+                hello@chainmatch.ai
+              </a>
+              .
+            </p>
+          </Reveal>
         </div>
+        <Reveal y={30}>
+          <Faq />
+        </Reveal>
       </div>
     </section>
   );
 }
 
-function FinalCta() {
+function ClosingCta() {
   return (
-    <section className="px-4 pb-24">
-      <div className="relative mx-auto max-w-6xl overflow-hidden rounded-[40px] bg-[#0b0d12] px-6 py-20 text-center text-white">
-        <div
-          className="pointer-events-none absolute inset-0 opacity-60 [background:radial-gradient(45%_70%_at_50%_0%,rgb(16_185_129/0.35),transparent_70%)]"
-          aria-hidden
-        />
-        <h2 className="relative mx-auto max-w-2xl font-display text-4xl font-bold tracking-tight sm:text-6xl">Your next job is a swipe away</h2>
-        <p className="relative mx-auto mt-4 max-w-md text-lg text-white/60">Upload a résumé and see live matches in about a minute.</p>
-        <div className="relative mt-9 flex flex-col justify-center gap-3 sm:flex-row">
-          <Button asChild size="lg" className="h-12 rounded-full bg-white px-7 text-[#0b0d12] hover:bg-white/90">
-            <Link href="/onboarding">
-              I&apos;m looking for a job <ArrowRight />
-            </Link>
-          </Button>
+    <section className="px-3 pb-6">
+      <div className="relative overflow-hidden rounded-[36px] bg-brand px-5 py-24 text-center text-white md:py-32">
+        {/* chain rings */}
+        <div className="pointer-events-none absolute -top-40 left-1/2 h-[520px] w-[820px] -translate-x-1/2" aria-hidden>
+          <div className="absolute inset-y-0 left-0 w-[480px] rounded-full border-[36px] border-white/[0.09]" />
+          <div className="absolute inset-y-0 right-0 w-[480px] rounded-full border-[36px] border-white/[0.09]" />
+        </div>
+        <div className="relative">
+          <BlurWords lines={["Ready for", "your next link?"]} accent={[1]} accentClassName="text-panel-lemon" className="text-[clamp(3rem,8vw,6.6rem)]" />
+          <Reveal>
+            <p className="mx-auto mt-6 max-w-md text-lg text-white/80">Upload a résumé and see live matches in about a minute. Free, no account needed.</p>
+            <div className="mt-9 flex justify-center">
+              <ArrowButton href="/onboarding" tone="light">
+                Get my matches
+              </ArrowButton>
+            </div>
+          </Reveal>
         </div>
       </div>
     </section>
   );
 }
-

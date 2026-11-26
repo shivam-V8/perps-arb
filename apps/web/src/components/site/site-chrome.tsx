@@ -1,30 +1,40 @@
 import Link from "next/link";
-import { Logo } from "@/components/brand/logo";
+import { PillNav, Wordmark } from "@/components/site/pill-nav";
 
 /** Footer shared by the landing page and the public pages. */
 export function SiteFooter() {
   return (
-    <footer className="border-t border-black/[0.06]">
-      <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-4 px-4 py-8 text-sm text-muted-foreground sm:flex-row sm:items-center">
-        <Logo />
-        <nav className="flex flex-wrap gap-x-5 gap-y-1">
-          <Link href="/pricing" className="hover:text-foreground">
-            Pricing
-          </Link>
-          <Link href="/signin" className="hover:text-foreground">
-            Sign in
-          </Link>
-          <Link href="/terms" className="hover:text-foreground">
-            Terms
-          </Link>
-          <Link href="/privacy" className="hover:text-foreground">
-            Privacy
-          </Link>
-          <Link href="/refunds" className="hover:text-foreground">
-            Refunds
-          </Link>
-        </nav>
-        <p>© {new Date().getFullYear()} ChainMatch</p>
+    <footer className="px-5 pt-16 pb-10">
+      <div className="mx-auto max-w-6xl">
+        <div className="flex flex-col justify-between gap-10 border-b border-black/[0.08] pb-10 md:flex-row">
+          <div>
+            <Wordmark dark={false} className="text-xl" />
+            <p className="mt-3 max-w-xs text-sm text-muted-foreground">The career chain-matching engine. Every job, linked to you.</p>
+          </div>
+          <nav className="grid grid-cols-2 gap-x-16 gap-y-2 text-sm sm:grid-cols-3">
+            {[
+              ["/#how", "How it works"],
+              ["/#chain", "The chain"],
+              ["/pricing", "Pricing"],
+              ["/onboarding", "Get matched"],
+              ["/signin", "Sign in"],
+              ["/#faq", "FAQ"],
+              ["/terms", "Terms"],
+              ["/privacy", "Privacy"],
+              ["/refunds", "Refunds"],
+            ].map(([href, label]) => (
+              <Link key={href} href={href} className="text-foreground/70 hover:text-foreground">
+                {label}
+              </Link>
+            ))}
+          </nav>
+        </div>
+        <div className="flex flex-col justify-between gap-2 pt-6 text-xs text-muted-foreground sm:flex-row">
+          <p>© {new Date().getFullYear()} ChainMatch · chainmatch.ai</p>
+          <a href="mailto:hello@chainmatch.ai" className="hover:text-foreground">
+            hello@chainmatch.ai
+          </a>
+        </div>
       </div>
     </footer>
   );
@@ -34,18 +44,8 @@ export function SiteFooter() {
 export function PublicPage({ children, width = "max-w-3xl" }: { children: React.ReactNode; width?: string }) {
   return (
     <div className="flex min-h-dvh flex-col bg-background">
-      <header className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4">
-        <Logo />
-        <nav className="flex items-center gap-1 text-sm">
-          <Link href="/pricing" className="rounded-full px-3 py-1.5 text-foreground/70 hover:text-foreground">
-            Pricing
-          </Link>
-          <Link href="/onboarding" className="rounded-full px-3 py-1.5 font-medium">
-            Open app
-          </Link>
-        </nav>
-      </header>
-      <main className={`mx-auto w-full flex-1 px-4 pt-8 pb-20 ${width}`}>{children}</main>
+      <PillNav />
+      <main className={`mx-auto w-full flex-1 px-4 pt-28 pb-20 ${width}`}>{children}</main>
       <SiteFooter />
     </div>
   );
@@ -54,7 +54,7 @@ export function PublicPage({ children, width = "max-w-3xl" }: { children: React.
 /** Long-form text styling for the policy pages. */
 export function Prose({ children }: { children: React.ReactNode }) {
   return (
-    <div className="space-y-4 text-[0.95rem] leading-relaxed text-foreground/80 [&_h1]:font-display [&_h1]:text-4xl [&_h1]:font-semibold [&_h1]:tracking-tight [&_h1]:text-foreground [&_h2]:pt-4 [&_h2]:font-display [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-foreground [&_li]:ml-5 [&_li]:list-disc">
+    <div className="space-y-4 text-[0.95rem] leading-relaxed text-foreground/80 [&_h1]:poster [&_h1]:text-5xl sm:[&_h1]:text-6xl [&_h1]:text-foreground [&_h2]:pt-4 [&_h2]:font-display [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-foreground [&_li]:ml-5 [&_li]:list-disc">
       {children}
     </div>
   );

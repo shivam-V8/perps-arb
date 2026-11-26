@@ -11,7 +11,7 @@ export default async function SavedPage() {
   const jobs = await listJobs(viewer.id, "saved");
   return (
     <div className="mx-auto w-full max-w-3xl pt-6 md:pt-10">
-      <h1 className="font-display text-4xl font-semibold tracking-tight">Saved jobs</h1>
+      <h1 className="poster text-5xl sm:text-6xl">Saved jobs</h1>
       <p className="mt-1 text-sm text-muted-foreground">Apply on the company&apos;s site. Draft a cover note first if you like.</p>
       <SavedJobs jobs={jobs} />
     </div>

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Bricolage_Grotesque, Geist_Mono, Inter } from "next/font/google";
+import { Anton, Bricolage_Grotesque, Geist_Mono, Inter } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
@@ -7,21 +7,23 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const display = Bricolage_Grotesque({ subsets: ["latin"], variable: "--font-display-face" });
 const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono" });
+/** condensed poster type for big uppercase headlines */
+const poster = Anton({ subsets: ["latin"], weight: "400", variable: "--font-poster-face" });
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
   // each page declares its own https://chainmatch.ai URL as canonical
   alternates: { canonical: "./" },
   title: {
-    default: "ChainMatch — Upload your résumé, swipe on jobs that fit",
+    default: "ChainMatch: the career chain-matching engine",
     template: "%s · ChainMatch",
   },
   description:
-    "Add your LinkedIn URL or upload a résumé and get live job postings ranked for you. Any field.",
+    "Every job, linked to you. Add a résumé or LinkedIn URL and ChainMatch traces the chain from your experience to every open role, with live jobs from company boards. Any field.",
 };
 
 export const viewport: Viewport = {
-  themeColor: "#f6f7f9",
+  themeColor: "#f7f6f2",
   width: "device-width",
   initialScale: 1,
 };
@@ -40,7 +42,7 @@ const STRIP_EXTENSION_ATTRS = `(() => {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${display.variable} ${geistMono.variable}`}>
+    <html lang="en" className={`${inter.variable} ${display.variable} ${geistMono.variable} ${poster.variable}`}>
       {process.env.NODE_ENV === "development" && (
         <head>
           <script dangerouslySetInnerHTML={{ __html: STRIP_EXTENSION_ATTRS }} />

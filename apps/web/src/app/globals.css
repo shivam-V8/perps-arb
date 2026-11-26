@@ -35,6 +35,14 @@
   --amber: #d97706;
   --sky: #0284c7;
   --surface-2: #fbfaf7;
+
+  /* pastel section panels */
+  --panel-mint: #e3f6ec;
+  --panel-peach: #fde9df;
+  --panel-sky: #e4eefc;
+  --panel-lemon: #fbf5d9;
+  --panel-lilac: #efeafa;
+  --ink: #0b0d12;
 }
 
 @theme inline {
@@ -64,6 +72,13 @@
   --color-amber: var(--amber);
   --color-sky: var(--sky);
   --color-surface-2: var(--surface-2);
+  --color-panel-mint: var(--panel-mint);
+  --color-panel-peach: var(--panel-peach);
+  --color-panel-sky: var(--panel-sky);
+  --color-panel-lemon: var(--panel-lemon);
+  --color-panel-lilac: var(--panel-lilac);
+  --color-ink: var(--ink);
+  --font-poster: var(--font-poster-face), "Arial Narrow", Impact, sans-serif;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -101,6 +116,15 @@
   ::selection {
     background: rgb(16 185 129 / 0.2);
   }
+}
+
+/* big condensed uppercase headlines */
+@utility poster {
+  font-family: var(--font-poster);
+  text-transform: uppercase;
+  line-height: 0.92;
+  letter-spacing: -0.01em;
+  font-weight: 400;
 }
 
 @utility tabular {

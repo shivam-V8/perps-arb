@@ -6,7 +6,10 @@ export const metadata = { title: "Pricing", description: "Start free. Go Pro for
 export default function PricingPage() {
   return (
     <PublicPage width="max-w-6xl">
-      <h1 className="text-center font-display text-4xl font-bold tracking-tight sm:text-5xl">Start free. Go Pro when it&apos;s working.</h1>
+      <h1 className="poster text-center text-[clamp(3rem,8vw,6rem)]">
+        Start free.
+        <span className="block text-brand">Go Pro when it works.</span>
+      </h1>
       <p className="mx-auto mt-3 max-w-xl text-center text-lg text-foreground/65">
         Every search shows your top 3 matches free. Unlock the rest when you&apos;re ready.
       </p>

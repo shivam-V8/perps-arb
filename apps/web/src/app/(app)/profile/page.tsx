@@ -23,7 +23,7 @@ export default async function ProfilePage() {
     <div className="mx-auto w-full max-w-3xl pt-6 md:pt-10">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-4xl font-semibold tracking-tight">Profile</h1>
+          <h1 className="poster text-5xl sm:text-6xl">Profile</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {viewer.role === "candidate" ? "Job seeker" : "Recruiter"} · {entitlement.email ?? "saved in this browser"}
           </p>

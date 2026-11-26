@@ -16,7 +16,7 @@ export default async function MatchesPage() {
 
   return (
     <div className="mx-auto w-full max-w-3xl pt-6 md:pt-10">
-      <h1 className="font-display text-4xl font-semibold tracking-tight">Messages</h1>
+      <h1 className="poster text-5xl sm:text-6xl">Messages</h1>
       {convos.length === 0 ? (
         <div className="mt-16 text-center text-muted-foreground">
           <MessageCircle className="mx-auto size-6" />

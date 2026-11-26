@@ -139,11 +139,11 @@ export function JobsBoard({
   }, []);
 
   return (
-    <div className="grid gap-10 pt-6 md:pt-8 lg:grid-cols-[1fr_300px]">
-      <div className="mx-auto w-full max-w-[420px]">
-        <div className="mb-4 flex items-end justify-between gap-3">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-10 pt-6 md:pt-8 lg:grid-cols-[minmax(0,1fr)_300px]">
+      <div className="mx-auto w-full max-w-[420px] min-w-0">
+        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
           <div className="min-w-0">
-            <h1 className="font-display text-3xl font-semibold tracking-tight">Jobs for you</h1>
+            <h1 className="poster text-5xl">Jobs for <span className="text-brand">you.</span></h1>
             <p className="truncate text-sm text-muted-foreground">Live postings for “{headline}”</p>
             {pro ? (
               <p className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-brand">
