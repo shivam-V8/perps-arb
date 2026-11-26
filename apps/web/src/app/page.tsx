@@ -1,7 +1,6 @@
 import {
   ArrowRight,
   BarChart3,
-  Briefcase,
   Check,
   Code2,
   EyeOff,
@@ -11,7 +10,6 @@ import {
   Layers,
   Lock,
   Megaphone,
-  MessageCircle,
   Palette,
   Scale,
   Search,
@@ -67,17 +65,12 @@ function Hero() {
           </h1>
           <p className="mt-6 max-w-lg text-lg text-foreground/65">
             Paste your LinkedIn link or upload a résumé. We find open roles on the web and on companies&apos; own job boards, and rank
-            them for you. Recruiters get the other side: candidates who fit, ready to invite.
+            them for you.
           </p>
           <div className="mt-9 flex flex-col gap-3 sm:flex-row">
             <Button asChild size="lg" className="h-13 rounded-full px-7 text-[0.95rem]">
-              <Link href="/onboarding?role=candidate">
+              <Link href="/onboarding">
                 <FileUp /> I&apos;m looking for a job
-              </Link>
-            </Button>
-            <Button asChild size="lg" variant="outline" className="h-13 rounded-full border-black/10 bg-white px-7 text-[0.95rem]">
-              <Link href="/onboarding?role=recruiter">
-                <Briefcase /> I&apos;m hiring
               </Link>
             </Button>
           </div>
@@ -129,51 +122,29 @@ function AnyField() {
 }
 
 function HowItWorks() {
-  const seeker = [
+  const steps = [
     { icon: FileUp, t: "Add your profile", b: "Paste your LinkedIn link, or upload a résumé or LinkedIn PDF. We build a profile you can edit." },
     { icon: Search, t: "We find live openings", b: "Web search plus companies' own job boards (Greenhouse, Lever, Ashby and more), so closed postings are filtered out." },
     { icon: Layers, t: "Swipe and apply", b: "Every card says why it fits. Save the good ones, draft a cover note, apply on the company's site." },
   ];
-  const recruiter = [
-    { icon: Briefcase, t: "Describe the role", b: "Paste a job description or write one sentence. We turn it into clear requirements." },
-    { icon: Sparkles, t: "Swipe ranked candidates", b: "People who opted in to be found, ranked against your must-haves, each with a reason." },
-    { icon: MessageCircle, t: "Invite and talk", b: "Swipe right to invite. When they accept, you get their name, résumé and a chat." },
-  ];
   return (
     <section id="how" className="scroll-mt-10 px-4 py-24 md:py-32">
       <div className="mx-auto max-w-6xl">
-        <h2 className="max-w-xl font-display text-4xl font-bold tracking-tight sm:text-5xl">Two sides, one swipe</h2>
-        <div className="mt-14 grid gap-6 md:grid-cols-2">
-          {[
-            { title: "For job seekers", steps: seeker, dark: false },
-            { title: "For recruiters", steps: recruiter, dark: true },
-          ].map((col) => (
-            <div
-              key={col.title}
-              className={
-                col.dark ? "rounded-[32px] bg-[#0b0d12] p-8 text-white" : "rounded-[32px] border border-black/[0.06] bg-white p-8 shadow-soft"
-              }
-            >
-              <p className={col.dark ? "text-sm font-semibold text-brand-soft" : "text-sm font-semibold text-brand"}>{col.title}</p>
-              <ol className="mt-6 space-y-6">
-                {col.steps.map((s, i) => (
-                  <li key={s.t} className="flex gap-4">
-                    <span className={col.dark ? "grid size-10 shrink-0 place-items-center rounded-xl bg-white/10" : "grid size-10 shrink-0 place-items-center rounded-xl bg-brand-wash"}>
-                      <s.icon className={col.dark ? "size-4.5 text-white" : "size-4.5 text-brand"} />
-                    </span>
-                    <div>
-                      <p className="font-display text-lg font-semibold">
-                        <span className="mr-2 opacity-40">{i + 1}</span>
-                        {s.t}
-                      </p>
-                      <p className={col.dark ? "mt-0.5 text-sm text-white/60" : "mt-0.5 text-sm text-foreground/60"}>{s.b}</p>
-                    </div>
-                  </li>
-                ))}
-              </ol>
-            </div>
+        <h2 className="max-w-xl font-display text-4xl font-bold tracking-tight sm:text-5xl">How it works</h2>
+        <ol className="mt-14 grid gap-6 md:grid-cols-3">
+          {steps.map((s, i) => (
+            <li key={s.t} className="rounded-[32px] border border-black/[0.06] bg-white p-8 shadow-soft">
+              <span className="grid size-10 place-items-center rounded-xl bg-brand-wash">
+                <s.icon className="size-4.5 text-brand" />
+              </span>
+              <p className="mt-6 font-display text-lg font-semibold">
+                <span className="mr-2 opacity-40">{i + 1}</span>
+                {s.t}
+              </p>
+              <p className="mt-1 text-sm text-foreground/60">{s.b}</p>
+            </li>
           ))}
-        </div>
+        </ol>
       </div>
     </section>
   );
@@ -184,7 +155,6 @@ function Compare() {
     ["Search a dozen job boards by keyword", "One search across careers pages and boards, from your résumé"],
     ["Guess which postings you're qualified for", "Each job says why it fits, and where it doesn't"],
     ["Rewrite a cover letter every time", "A draft cover note from your real experience"],
-    ["Recruiters wade through hundreds of applications", "Recruiters see a ranked shortlist and invite in one swipe"],
   ];
   return (
     <section className="bg-white px-4 py-24">
@@ -246,17 +216,9 @@ function FinalCta() {
         <p className="relative mx-auto mt-4 max-w-md text-lg text-white/60">Upload a résumé and see live matches in about a minute.</p>
         <div className="relative mt-9 flex flex-col justify-center gap-3 sm:flex-row">
           <Button asChild size="lg" className="h-12 rounded-full bg-white px-7 text-[#0b0d12] hover:bg-white/90">
-            <Link href="/onboarding?role=candidate">
+            <Link href="/onboarding">
               I&apos;m looking for a job <ArrowRight />
             </Link>
-          </Button>
-          <Button
-            asChild
-            size="lg"
-            variant="outline"
-            className="h-12 rounded-full border-white/20 bg-transparent px-7 text-white hover:bg-white/10 hover:text-white"
-          >
-            <Link href="/onboarding?role=recruiter">I&apos;m hiring</Link>
           </Button>
         </div>
       </div>
