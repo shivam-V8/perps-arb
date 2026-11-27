@@ -64,6 +64,23 @@ export function Hero() {
                 </li>
               ))}
             </motion.ul>
+            <motion.a
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.7, delay: 0.95 }}
+              href="https://www.producthunt.com/products/chainmatch-ai?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-chainmatch-ai"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-7 inline-block"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element -- Product Hunt's hosted badge SVG */}
+              <img
+                alt="ChainMatch AI - Find open jobs matched to your skills and experience | Product Hunt"
+                width={250}
+                height={54}
+                src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1332982&theme=light&t=1795778708428"
+              />
+            </motion.a>
           </div>
           <HeroPhone />
         </div>
